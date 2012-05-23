@@ -18,19 +18,31 @@ public final class ConnectReqPkg extends AbstractPackage {
 	private String sourceAddress;
 	private String authenticatorSource;
 	private byte version;
-	private String timestamp;
+	private Integer timestamp;
 	public ConnectReqPkg() {
 		super(Command.CONNECT_REQ);		
 	}
 
 	@Override
-	protected int onToBuffer(ByteBuffer buffer) {		
-		return 0;
+	protected int onToBuffer(ByteBuffer buffer) {
+		int len = 0;
+		writeToBuffer(buffer, this.sourceAddress, 6);
+		len+=6;
+		writeToBuffer(buffer, this.authenticatorSource, 16);
+		len+=16;
+		buffer.put(this.version);
+		len+=1;
+		buffer.putInt(this.timestamp);
+		len+=4;
+		return len;
 	}
 
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		
+		this.sourceAddress = readFromBuffer(buffer, 6);
+		this.authenticatorSource = readFromBuffer(buffer, 16);
+		this.version = buffer.get();
+		this.timestamp = buffer.getInt();
 	}
 
 	/**
@@ -78,14 +90,14 @@ public final class ConnectReqPkg extends AbstractPackage {
 	/**
 	 * @return the timestamp
 	 */
-	public String getTimestamp() {
+	public Integer getTimestamp() {
 		return timestamp;
 	}
 
 	/**
 	 * @param timestamp the timestamp to set
 	 */
-	public void setTimestamp(String timestamp) {
+	public void setTimestamp(Integer timestamp) {
 		this.timestamp = timestamp;
 	}
 	
