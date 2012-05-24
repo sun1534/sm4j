@@ -38,7 +38,7 @@ abstract class AbstractPackage implements IPackage{
 			throw new CmppException(Arrays.toString(buffer.array()), e);
 		}
 	}
-	private int toBufferImpl(ByteBuffer buffer){		
+	private int toBufferImpl(ByteBuffer buffer) throws CmppException{		
 		this.sequence = genNextGlobalSequenceNumber();
 		this.length = 0;
 		buffer.putInt(0);
@@ -50,7 +50,7 @@ abstract class AbstractPackage implements IPackage{
 		this.length += onToBuffer(buffer);
 		return this.length;
 	}
-	protected abstract int onToBuffer(ByteBuffer buffer);
+	protected abstract int onToBuffer(ByteBuffer buffer) throws CmppException;
 	@Override
 	public void loadBuffer(ByteBuffer buffer) throws CmppException {
 		try{

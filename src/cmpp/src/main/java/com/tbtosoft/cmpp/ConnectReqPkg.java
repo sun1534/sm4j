@@ -9,6 +9,11 @@
 package com.tbtosoft.cmpp;
 
 import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import com.tbtosoft.cmpp.exception.CmppException;
 
 /**
  * @author stephen
@@ -16,19 +21,34 @@ import java.nio.ByteBuffer;
  */
 public final class ConnectReqPkg extends AbstractPackage {
 	private String sourceAddress;
-	private String authenticatorSource;
+	private byte[] authenticatorSource;
 	private byte version;
 	private Integer timestamp;
+	private String password;
 	public ConnectReqPkg() {
 		super(Command.CONNECT_REQ);		
 	}
-
+	public ConnectReqPkg(String password){
+		this();
+		this.password = password;
+	}
 	@Override
-	protected int onToBuffer(ByteBuffer buffer) {
+	protected int onToBuffer(ByteBuffer buffer) throws CmppException {
+		this.timestamp = createTimestamp();
+		try {
+			this.authenticatorSource = createAuthenticatorSource(
+					this.sourceAddress, this.password, this.timestamp);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			throw new CmppException(
+					"Create authenticator source failure(SourceAddr:"
+							+ this.authenticatorSource + " Password:"
+							+ this.password + " Timestamp:" + this.timestamp, e);
+		}
 		int len = 0;
 		writeToBuffer(buffer, this.sourceAddress, 6);
 		len+=6;
-		writeToBuffer(buffer, this.authenticatorSource, 16);
+		buffer.put(this.authenticatorSource);
 		len+=16;
 		buffer.put(this.version);
 		len+=1;
@@ -40,7 +60,8 @@ public final class ConnectReqPkg extends AbstractPackage {
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
 		this.sourceAddress = readFromBuffer(buffer, 6);
-		this.authenticatorSource = readFromBuffer(buffer, 16);
+		this.authenticatorSource = new byte[16];
+		buffer.get(this.authenticatorSource);
 		this.version = buffer.get();
 		this.timestamp = buffer.getInt();
 	}
@@ -62,14 +83,14 @@ public final class ConnectReqPkg extends AbstractPackage {
 	/**
 	 * @return the authenticatorSource
 	 */
-	public String getAuthenticatorSource() {
+	public byte[] getAuthenticatorSource() {
 		return authenticatorSource;
 	}
 
 	/**
 	 * @param authenticatorSource the authenticatorSource to set
 	 */
-	public void setAuthenticatorSource(String authenticatorSource) {
+	public void setAuthenticatorSource(byte[] authenticatorSource) {
 		this.authenticatorSource = authenticatorSource;
 	}
 
@@ -101,4 +122,18 @@ public final class ConnectReqPkg extends AbstractPackage {
 		this.timestamp = timestamp;
 	}
 	
+	public byte[] createAuthenticatorSource(String sourceAddr, String password, Integer timestamp) throws NoSuchAlgorithmException{
+		ByteBuffer buffer = ByteBuffer.allocate(256);
+		writeToBuffer(buffer, sourceAddr, 6);
+		buffer.position(buffer.position()+9);
+		writeToBuffer(buffer, password, password.length());
+		writeToBuffer(buffer, timestamp.toString(), 10);
+		java.security.MessageDigest md5 = java.security.MessageDigest.getInstance("MD5");
+        md5.update(buffer.array());
+        return md5.digest();		
+	}
+	
+	private Integer createTimestamp(){
+		return Integer.parseInt(new SimpleDateFormat("MMddHHmmss").format(new Date()));
+	}
 }
