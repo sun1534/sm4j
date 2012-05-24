@@ -24,9 +24,10 @@ public final class ConnectRspPkg extends AbstractPackage{
 	public ConnectRspPkg() {
 		super(Command.CONNECT_RSP);		
 	}
-	public ConnectRspPkg(String password){
+	public ConnectRspPkg(String password, byte[] authenticatoreSource){
 		this();
 		this.password = password;
+		this.authenticatorSource = authenticatoreSource;
 	}
 
 	@Override
