@@ -84,7 +84,7 @@ abstract class AbstractPackage implements IPackage{
 	public int getCommandId() {
 		return commandId;
 	}
-	protected void writeToBuffer(ByteBuffer buffer, String octetString, int len, Charset charset){
+	protected int writeToBuffer(ByteBuffer buffer, String octetString, int len, Charset charset){
 		byte[] tmp = octetString.getBytes(charset);
 		int size = tmp.length > len?len:tmp.length;
 		buffer.put(tmp, 0, size);
@@ -92,9 +92,10 @@ abstract class AbstractPackage implements IPackage{
 			buffer.put((byte)0x00);
 			size++;
 		}
+		return size;
 	}
-	protected void writeToBuffer(ByteBuffer buffer, String octetString, int len){
-		writeToBuffer(buffer, octetString, len, Charset.defaultCharset());
+	protected int writeToBuffer(ByteBuffer buffer, String octetString, int len){
+		return writeToBuffer(buffer, octetString, len, Charset.defaultCharset());
 	}
 	protected String readFromBuffer(ByteBuffer buffer, int len){
 		return readFromBuffer(buffer, len, Charset.defaultCharset());
