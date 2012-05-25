@@ -9,6 +9,7 @@
 package com.tbtosoft.cmpp;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,6 +70,41 @@ public final class SubmitReqPkg extends AbstractPackage {
 		len+=1;
 		buffer.put(this.msgLevel);
 		len+=1;
+		writeToBuffer(buffer, this.serviceId, 10);
+		len+=10;
+		buffer.put(this.feeUserType);
+		len+=1;
+		writeToBuffer(buffer, this.feeTerminalId, 21);
+		len+=21;
+		buffer.put(this.tppId);
+		len+=1;
+		buffer.put(this.tpUdhi);
+		len+=1;
+		buffer.put(this.msgFmt);
+		len+=1;
+		writeToBuffer(buffer, this.msgSrc, 6);
+		len+=6;
+		writeToBuffer(buffer, this.feeType, 2);
+		len+=2;
+		writeToBuffer(buffer, this.feeCode, 6);
+		len+=6;
+		writeToBuffer(buffer, this.vaildTime, 17);
+		len+=17;
+		writeToBuffer(buffer, this.atTime, 17);
+		len+=17;
+		writeToBuffer(buffer, this.srcId, 21);
+		len+=21;
+		buffer.put(this.destUsrTl);
+		len+=1;
+		writeToBuffer(buffer, this.destTerminalId, this.destTerminalId.length());
+		len+=this.destTerminalId.length();		
+		byte[] tmpMsg = this.msgContent.getBytes(Charset.forName(SubmitReqPkg.mapMsgFmt.get(this.msgFmt)));
+		buffer.put((byte)tmpMsg.length);
+		len+=1;
+		buffer.put(tmpMsg);
+		len+=tmpMsg.length;
+		buffer.put(this.reserve);
+		len+=this.reserve.length;
 		return len;
 	}
 
@@ -77,7 +113,14 @@ public final class SubmitReqPkg extends AbstractPackage {
 	 */
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		
+		buffer.get(this.msgId);
+		this.pkTotal = buffer.get();
+		this.pkNumber = buffer.get();
+		this.registeredDelivery = buffer.get();
+		this.msgLevel = buffer.get();
+		this.serviceId = readFromBuffer(buffer, 10);
+		this.feeUserType = buffer.get();
+		this.feeTerminalId = readFromBuffer(buffer, 21);
 	}
 
 	/**
