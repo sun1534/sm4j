@@ -9,100 +9,77 @@
 package com.tbtosoft.smgp;
 
 import java.nio.ByteBuffer;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * @author stephen
  *
  */
 public final class LoginRspPkg extends AbstractPackage{
-	private byte status;
-	private byte[] authenticatorISMG;
-	private byte version;
-	private String password;
-	private byte[] authenticatorSource;
+	private int status;
+	private String authenticatorServer;//16bytes
+	private byte serverVersion;
+
 	public LoginRspPkg() {
 		super(Command.LOGIN_RSP);		
 	}
-	public LoginRspPkg(String password, byte[] authenticatoreSource){
-		this();
-		this.password = password;
-		this.authenticatorSource = authenticatoreSource;
+	public LoginRspPkg(String authenticatorServer, byte serverVersion){
+		this();		
+		this.authenticatorServer = authenticatorServer;
+		this.serverVersion = serverVersion;
 	}
 
 	@Override
-	protected int onToBuffer(ByteBuffer buffer)  {
-		try {
-			this.authenticatorISMG = createAuthenticatorISMG(this.status, this.authenticatorSource, this.password);
-		} catch (NoSuchAlgorithmException e) {			
-			e.printStackTrace();
-		}
+	protected int onToBuffer(ByteBuffer buffer)  {		
 		int len = 0;
-		buffer.put(this.status);
-		len+=1;
-		buffer.put(this.authenticatorISMG);
+		buffer.putInt(this.status);
+		len+=4;
+		writeToBuffer(buffer, this.authenticatorServer, 16);
 		len+=16;
-		buffer.put(this.version);
+		buffer.put(this.serverVersion);
 		len+=1;
 		return len;
 	}
 
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		this.status = buffer.get();
-		this.authenticatorISMG = new byte[16];
-		buffer.get(this.authenticatorISMG);
-		this.version = buffer.get();
+		this.status = buffer.getInt();		
+		this.authenticatorServer = readFromBuffer(buffer, 16);
+		this.serverVersion = buffer.get();
 	}
-
 	/**
 	 * @return the status
 	 */
-	public byte getStatus() {
+	public int getStatus() {
 		return status;
 	}
-
 	/**
 	 * @param status the status to set
 	 */
-	public void setStatus(byte status) {
+	public void setStatus(int status) {
 		this.status = status;
 	}
-
 	/**
-	 * @return the authenticatorISMG
+	 * @return the authenticatorServer
 	 */
-	public byte[] getAuthenticatorISMG() {
-		return authenticatorISMG;
+	public String getAuthenticatorServer() {
+		return authenticatorServer;
 	}
-
 	/**
-	 * @param authenticatorISMG the authenticatorISMG to set
+	 * @param authenticatorServer the authenticatorServer to set
 	 */
-	public void setAuthenticatorISMG(byte[] authenticatorISMG) {
-		this.authenticatorISMG = authenticatorISMG;
+	public void setAuthenticatorServer(String authenticatorServer) {
+		this.authenticatorServer = authenticatorServer;
 	}
-
 	/**
-	 * @return the version
+	 * @return the serverVersion
 	 */
-	public byte getVersion() {
-		return version;
+	public byte getServerVersion() {
+		return serverVersion;
 	}
-
 	/**
-	 * @param version the version to set
+	 * @param serverVersion the serverVersion to set
 	 */
-	public void setVersion(byte version) {
-		this.version = version;
-	}
-	public byte[] createAuthenticatorISMG(byte status, byte[] authenticatorSource, String password) throws NoSuchAlgorithmException{
-		ByteBuffer buffer = ByteBuffer.allocate(256);
-		buffer.put(status);
-		buffer.put(authenticatorSource);			
-		writeToBuffer(buffer, password, password.length());
-		java.security.MessageDigest md5 = java.security.MessageDigest.getInstance("MD5");
-        md5.update(buffer.array());
-        return md5.digest();		
-	}
+	public void setServerVersion(byte serverVersion) {
+		this.serverVersion = serverVersion;
+	}	
 }
