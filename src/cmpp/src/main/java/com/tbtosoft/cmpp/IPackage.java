@@ -28,7 +28,7 @@ public interface IPackage {
 	public int toBuffer(ByteBuffer buffer) throws CmppException;
 	
 	/**
-	 * CMPP_CONNECT
+	 * 
 	 * @param buffer
 	 * @throws CmppException
 	 */

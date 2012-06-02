@@ -10,22 +10,12 @@ package com.tbtosoft.cmpp;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author stephen
  *
  */
 public final class SubmitReqPkg extends AbstractPackage {
-	private final static Map<Integer, String> mapMsgFmt = new HashMap<Integer, String>();
-	static{
-		mapMsgFmt.put(0, "gb2312");
-//		mapMsgFmt.put(3, "");
-//		mapMsgFmt.put(4, "");
-		mapMsgFmt.put(8, "UnicodeBigUnmarked");
-		mapMsgFmt.put(15, "gb2312");
-	}
 	private byte[] msgId;
 	private byte pkTotal;
 	private byte pkNumber;
@@ -98,7 +88,7 @@ public final class SubmitReqPkg extends AbstractPackage {
 		len+=1;
 		writeToBuffer(buffer, this.destTerminalId, this.destTerminalId.length());
 		len+=this.destTerminalId.length();		
-		byte[] tmpMsg = this.msgContent.getBytes(Charset.forName(SubmitReqPkg.mapMsgFmt.get(this.msgFmt)));
+		byte[] tmpMsg = this.msgContent.getBytes(Charset.forName(mapMsgFmt.get(this.msgFmt)));
 		buffer.put((byte)tmpMsg.length);
 		len+=1;
 		buffer.put(tmpMsg);
@@ -121,6 +111,20 @@ public final class SubmitReqPkg extends AbstractPackage {
 		this.serviceId = readFromBuffer(buffer, 10);
 		this.feeUserType = buffer.get();
 		this.feeTerminalId = readFromBuffer(buffer, 21);
+		this.tppId = buffer.get();
+		this.tpUdhi = buffer.get();
+		this.msgFmt = buffer.get();
+		this.msgSrc = readFromBuffer(buffer, 6);
+		this.feeType = readFromBuffer(buffer, 2);
+		this.feeCode = readFromBuffer(buffer, 6);
+		this.vaildTime = readFromBuffer(buffer, 17);
+		this.atTime = readFromBuffer(buffer, 17);
+		this.srcId = readFromBuffer(buffer, 21);
+		this.destUsrTl = buffer.get();
+		this.destTerminalId = readFromBuffer(buffer, this.destUsrTl*21);
+		this.msgLength = buffer.get();
+		this.msgContent = readFromBuffer(buffer, this.msgLength, Charset.forName(mapMsgFmt.get(this.msgFmt)));
+		buffer.get(this.reserve);
 	}
 
 	/**

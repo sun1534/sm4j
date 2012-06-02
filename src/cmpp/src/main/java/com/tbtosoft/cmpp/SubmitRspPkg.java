@@ -15,17 +15,24 @@ import java.nio.ByteBuffer;
  *
  */
 public final class SubmitRspPkg extends AbstractPackage {
-
+	private byte[] msgId;
+	private byte result;
 	public SubmitRspPkg() {
 		super(Command.SUBMIT_RSP);		
+		this.msgId = new byte[8];
 	}
 
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.cmpp.AbstractPackage#onToBuffer(java.nio.ByteBuffer)
 	 */
 	@Override
-	protected int onToBuffer(ByteBuffer buffer) {		
-		return 0;
+	protected int onToBuffer(ByteBuffer buffer) {
+		int len = 0;
+		buffer.put(this.msgId);
+		len+=this.msgId.length;
+		buffer.put(this.result);
+		len+=1;
+		return len;
 	}
 
 	/* (non-Javadoc)
@@ -33,7 +40,36 @@ public final class SubmitRspPkg extends AbstractPackage {
 	 */
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		
+		buffer.get(this.msgId);
+		this.result = buffer.get();
+	}
+
+	/**
+	 * @return the msgId
+	 */
+	public byte[] getMsgId() {
+		return msgId;
+	}
+
+	/**
+	 * @param msgId the msgId to set
+	 */
+	public void setMsgId(byte[] msgId) {
+		this.msgId = msgId;
+	}
+
+	/**
+	 * @return the result
+	 */
+	public byte getResult() {
+		return result;
+	}
+
+	/**
+	 * @param result the result to set
+	 */
+	public void setResult(byte result) {
+		this.result = result;
 	}
 
 }
