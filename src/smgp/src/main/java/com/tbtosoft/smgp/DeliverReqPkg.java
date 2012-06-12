@@ -14,21 +14,21 @@ import java.nio.ByteBuffer;
  * @author stephen
  *
  */
-public final class DeliverReqPkg extends AbstractPackage {
-	private byte[] msgId;//8bytes
-	private String destId;//21bytes
-	private String serviceId;//10bytes
-	private byte tppId;
-	private byte tpUdhi;
-	private byte msgFmt;
-	private String srcTerminalId;//21bytes
-	private byte registeredDelivery;
+public final class DeliverReqPkg extends AbstractPackage {	
+	private byte[] msgId;//10bytes
+	private byte isReport;
+	private byte msgFormat;
+	private String recvTime;//14bytes
+	private String srcTermID;//21bytes
+	private String destTermID;//21bytes
 	private byte msgLength;
 	private byte[] msgContent;
 	private byte[] reserve;//8bytes
+	
+	
 	protected DeliverReqPkg() {
 		super(Command.DELIVER_REQ);	
-		this.msgId = new byte[8];
+		this.msgId = new byte[10];
 		this.reserve = new byte[8];
 	}
 
@@ -38,28 +38,15 @@ public final class DeliverReqPkg extends AbstractPackage {
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) {
 		int len = 0;
-		buffer.put(this.msgId);
-		len+=this.msgId.length;
-		writeToBuffer(buffer, this.destId, 21);
-		len+=21;
-		writeToBuffer(buffer, this.serviceId, 10);
-		len+=10;
-		buffer.put(this.tppId);
-		len+=1;
-		buffer.put(this.tpUdhi);
-		len+=1;
-		buffer.put(this.msgFmt);
-		len+=1;
-		writeToBuffer(buffer, this.srcTerminalId, 21);
-		len+=21;
-		buffer.put(this.registeredDelivery);
-		len+=1;
-		buffer.put(this.msgLength);
-		len+=1;
-		buffer.put(this.msgContent);
-		len+=this.msgContent.length;
-		buffer.put(this.reserve);
-		len+=this.reserve.length;
+		len+=write(buffer, this.msgId);
+		len+=write(buffer, this.isReport);
+		len+=write(buffer, this.msgFormat);
+		len+=writeString(buffer, this.recvTime, 14);
+		len+=writeString(buffer, this.srcTermID, 21);
+		len+=writeString(buffer, this.destTermID, 21);
+		len+=write(buffer, this.msgLength);
+		len+=write(buffer, this.msgContent);
+		len+=write(buffer, this.reserve);
 		return len;
 	}
 
@@ -68,47 +55,52 @@ public final class DeliverReqPkg extends AbstractPackage {
 	 */
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		buffer.get(this.msgId);
-		this.destId = readFromBuffer(buffer, 21);
-		this.serviceId = readFromBuffer(buffer, 10);
-		this.tppId = buffer.get();
-		this.tpUdhi = buffer.get();
-		this.msgFmt = buffer.get();
-		this.srcTerminalId = readFromBuffer(buffer, 21);
-		this.registeredDelivery = buffer.get();
-		this.msgLength = buffer.get();
+		read(buffer, this.msgId);
+		this.isReport = read(buffer);
+		this.msgFormat = read(buffer);
+		this.recvTime = readString(buffer, 14);
+		this.srcTermID = readString(buffer, 21);
+		this.destTermID = readString(buffer, 21);
+		this.msgLength = read(buffer);
 		this.msgContent = new byte[this.msgLength];
-		buffer.get(this.msgContent);
-		buffer.get(this.reserve);
+		read(buffer, this.msgContent);
+		read(buffer, this.reserve);
 	}
 	
 	public class StatusReport{
-		private byte[] msgId;//8bytes
-		private String stat;//7bytes;
-		private String submitTime;//10bytes
-		private String doneTime;//10byte;
-		private int smscSequnce;//4bytes
+		private byte[] msgId;//10bytes
+		private String sub;//3bytes
+		private String dlvrd;//3bytes
+		private String submitDate;//10bytes
+		private String doneDate;//10bytes		
+		private String stat;//7bytes
+		private String err;//3bytes
+		private String txt;//20bytes;
+		public StatusReport(){
+			msgId = new byte[10];
+		}
 		public int toBuffer(ByteBuffer buffer){
 			int len = 0;
-			buffer.put(this.msgId);
-			len+=this.msgId.length;
-			writeToBuffer(buffer, this.stat, 7);
-			len+=7;
-			writeToBuffer(buffer, this.submitTime, 10);
-			len+=10;
-			writeToBuffer(buffer, this.doneTime, 10);
-			len+=10;
-			buffer.putInt(this.smscSequnce);
-			len+=4;
+			len+=write(buffer, this.msgId);
+			len+=writeString(buffer, this.sub, 3);
+			len+=writeString(buffer, this.dlvrd, 3);
+			len+=writeString(buffer, this.submitDate, 10);
+			len+=writeString(buffer, this.doneDate, 10);
+			len+=writeString(buffer, this.stat, 7);
+			len+=writeString(buffer, this.err, 3);
+			len+=writeString(buffer, this.txt, 20);
 			return len;
 		}
 				
 		public void loadBuffer(ByteBuffer buffer){
-			buffer.get(this.msgId);
-			this.stat = readFromBuffer(buffer, 7);
-			this.submitTime = readFromBuffer(buffer, 10);
-			this.doneTime = readFromBuffer(buffer, 10);
-			this.smscSequnce = buffer.getInt();
+			read(buffer, this.msgId);
+			this.sub = readString(buffer, 3);
+			this.dlvrd = readString(buffer, 3);
+			this.submitDate = readString(buffer, 10);
+			this.doneDate = readString(buffer, 10);
+			this.stat = readString(buffer, 7);
+			this.err = readString(buffer, 3);
+			this.txt = readString(buffer, 20);
 		}
 
 		/**
@@ -126,6 +118,62 @@ public final class DeliverReqPkg extends AbstractPackage {
 		}
 
 		/**
+		 * @return the sub
+		 */
+		public String getSub() {
+			return sub;
+		}
+
+		/**
+		 * @param sub the sub to set
+		 */
+		public void setSub(String sub) {
+			this.sub = sub;
+		}
+
+		/**
+		 * @return the dlvrd
+		 */
+		public String getDlvrd() {
+			return dlvrd;
+		}
+
+		/**
+		 * @param dlvrd the dlvrd to set
+		 */
+		public void setDlvrd(String dlvrd) {
+			this.dlvrd = dlvrd;
+		}
+
+		/**
+		 * @return the submitDate
+		 */
+		public String getSubmitDate() {
+			return submitDate;
+		}
+
+		/**
+		 * @param submitDate the submitDate to set
+		 */
+		public void setSubmitDate(String submitDate) {
+			this.submitDate = submitDate;
+		}
+
+		/**
+		 * @return the doneDate
+		 */
+		public String getDoneDate() {
+			return doneDate;
+		}
+
+		/**
+		 * @param doneDate the doneDate to set
+		 */
+		public void setDoneDate(String doneDate) {
+			this.doneDate = doneDate;
+		}
+
+		/**
 		 * @return the stat
 		 */
 		public String getStat() {
@@ -140,47 +188,32 @@ public final class DeliverReqPkg extends AbstractPackage {
 		}
 
 		/**
-		 * @return the submitTime
+		 * @return the err
 		 */
-		public String getSubmitTime() {
-			return submitTime;
+		public String getErr() {
+			return err;
 		}
 
 		/**
-		 * @param submitTime the submitTime to set
+		 * @param err the err to set
 		 */
-		public void setSubmitTime(String submitTime) {
-			this.submitTime = submitTime;
+		public void setErr(String err) {
+			this.err = err;
 		}
 
 		/**
-		 * @return the doneTime
+		 * @return the txt
 		 */
-		public String getDoneTime() {
-			return doneTime;
+		public String getTxt() {
+			return txt;
 		}
 
 		/**
-		 * @param doneTime the doneTime to set
+		 * @param txt the txt to set
 		 */
-		public void setDoneTime(String doneTime) {
-			this.doneTime = doneTime;
-		}
-
-		/**
-		 * @return the smscSequnce
-		 */
-		public int getSmscSequnce() {
-			return smscSequnce;
-		}
-
-		/**
-		 * @param smscSequnce the smscSequnce to set
-		 */
-		public void setSmscSequnce(int smscSequnce) {
-			this.smscSequnce = smscSequnce;
-		}
-		
+		public void setTxt(String txt) {
+			this.txt = txt;
+		}		
 	}
 
 	/**
@@ -195,105 +228,7 @@ public final class DeliverReqPkg extends AbstractPackage {
 	 */
 	public void setMsgId(byte[] msgId) {
 		this.msgId = msgId;
-	}
-
-	/**
-	 * @return the destId
-	 */
-	public String getDestId() {
-		return destId;
-	}
-
-	/**
-	 * @param destId the destId to set
-	 */
-	public void setDestId(String destId) {
-		this.destId = destId;
-	}
-
-	/**
-	 * @return the serviceId
-	 */
-	public String getServiceId() {
-		return serviceId;
-	}
-
-	/**
-	 * @param serviceId the serviceId to set
-	 */
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
-	}
-
-	/**
-	 * @return the tppId
-	 */
-	public byte getTppId() {
-		return tppId;
-	}
-
-	/**
-	 * @param tppId the tppId to set
-	 */
-	public void setTppId(byte tppId) {
-		this.tppId = tppId;
-	}
-
-	/**
-	 * @return the tpUdhi
-	 */
-	public byte getTpUdhi() {
-		return tpUdhi;
-	}
-
-	/**
-	 * @param tpUdhi the tpUdhi to set
-	 */
-	public void setTpUdhi(byte tpUdhi) {
-		this.tpUdhi = tpUdhi;
-	}
-
-	/**
-	 * @return the msgFmt
-	 */
-	public byte getMsgFmt() {
-		return msgFmt;
-	}
-
-	/**
-	 * @param msgFmt the msgFmt to set
-	 */
-	public void setMsgFmt(byte msgFmt) {
-		this.msgFmt = msgFmt;
-	}
-
-	/**
-	 * @return the srcTerminalId
-	 */
-	public String getSrcTerminalId() {
-		return srcTerminalId;
-	}
-
-	/**
-	 * @param srcTerminalId the srcTerminalId to set
-	 */
-	public void setSrcTerminalId(String srcTerminalId) {
-		this.srcTerminalId = srcTerminalId;
-	}
-
-	/**
-	 * @return the registeredDelivery
-	 */
-	public byte getRegisteredDelivery() {
-		return registeredDelivery;
-	}
-
-	/**
-	 * @param registeredDelivery the registeredDelivery to set
-	 */
-	public void setRegisteredDelivery(byte registeredDelivery) {
-		this.registeredDelivery = registeredDelivery;
-	}
+	}	
 
 	/**
 	 * @return the msgLength

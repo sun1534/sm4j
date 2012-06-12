@@ -16,31 +16,26 @@ import java.nio.charset.Charset;
  *
  */
 public final class SubmitReqPkg extends AbstractPackage {
-	private byte[] msgId;
-	private byte pkTotal;
-	private byte pkNumber;
-	private byte registeredDelivery;
-	private byte msgLevel;
-	private String serviceId;//10bytes
-	private byte feeUserType;
-	private String feeTerminalId;//21bytes
-	private byte tppId;
-	private byte tpUdhi;
-	private byte msgFmt;
-	private String msgSrc;//6bytes
+	private byte msgType;
+	private byte needReport;
+	private byte priority;
+	private String serviceID;//10bytes
 	private String feeType;//2bytes
 	private String feeCode;//6bytes
+	private String fixedFee;//6bytes
+	private byte msgFormat;
 	private String vaildTime;//17bytes
 	private String atTime;//17bytes
-	private String srcId;//21bytes
-	private byte destUsrTl;
-	private String destTerminalId;//21*destUsrTl bytes
+	private String srcTermID;//21bytes;
+	private String chargeTermID;//21bytes;
+	private byte destTermIDCount;
+	private String destTermID;//21*destTermIDCount bytes
 	private byte msgLength;
 	private String msgContent;
 	private byte[] reserve;//8bytes
+	
 	public SubmitReqPkg() {
-		super(Command.SUBMIT_REQ);
-		this.msgId = new byte[8];
+		super(Command.SUBMIT_REQ);		
 		this.reserve = new byte[8];
 	}
 
@@ -50,51 +45,23 @@ public final class SubmitReqPkg extends AbstractPackage {
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) {
 		int len = 0;
-		buffer.put(this.msgId);
-		len+=this.msgId.length;
-		buffer.put(this.pkTotal);
-		len+=1;
-		buffer.put(this.pkNumber);
-		len+=1;
-		buffer.put(this.registeredDelivery);
-		len+=1;
-		buffer.put(this.msgLevel);
-		len+=1;
-		writeToBuffer(buffer, this.serviceId, 10);
-		len+=10;
-		buffer.put(this.feeUserType);
-		len+=1;
-		writeToBuffer(buffer, this.feeTerminalId, 21);
-		len+=21;
-		buffer.put(this.tppId);
-		len+=1;
-		buffer.put(this.tpUdhi);
-		len+=1;
-		buffer.put(this.msgFmt);
-		len+=1;
-		writeToBuffer(buffer, this.msgSrc, 6);
-		len+=6;
-		writeToBuffer(buffer, this.feeType, 2);
-		len+=2;
-		writeToBuffer(buffer, this.feeCode, 6);
-		len+=6;
-		writeToBuffer(buffer, this.vaildTime, 17);
-		len+=17;
-		writeToBuffer(buffer, this.atTime, 17);
-		len+=17;
-		writeToBuffer(buffer, this.srcId, 21);
-		len+=21;
-		buffer.put(this.destUsrTl);
-		len+=1;
-		writeToBuffer(buffer, this.destTerminalId, this.destTerminalId.length());
-		len+=this.destTerminalId.length();		
-		byte[] tmpMsg = this.msgContent.getBytes(Charset.forName(mapMsgFmt.get(this.msgFmt)));
-		buffer.put((byte)tmpMsg.length);
-		len+=1;
-		buffer.put(tmpMsg);
-		len+=tmpMsg.length;
-		buffer.put(this.reserve);
-		len+=this.reserve.length;
+		len+=write(buffer, this.msgType);
+		len+=write(buffer, this.needReport);
+		len+=write(buffer, this.priority);
+		len+=writeString(buffer, this.serviceID, 10);
+		len+=writeString(buffer, this.feeType, 2);
+		len+=writeString(buffer, this.feeCode, 6);
+		len+=writeString(buffer, this.fixedFee, 6);
+		len+=write(buffer, this.msgFormat);
+		len+=writeString(buffer, this.vaildTime, 17);
+		len+=writeString(buffer, this.atTime, 17);
+		len+=writeString(buffer, this.srcTermID, 2);
+		len+=writeString(buffer, this.chargeTermID, 12);
+		len+=write(buffer, this.destTermIDCount);
+		len+=writeString(buffer, this.destTermID, 21*this.destTermIDCount);
+		len+=write(buffer, this.msgLength);		
+		len+=write(buffer, this.msgContent.getBytes(Charset.forName(mapMsgFmt.get(this.msgFormat))));		
+		len+=write(buffer, this.reserve);		
 		return len;
 	}
 
@@ -103,196 +70,79 @@ public final class SubmitReqPkg extends AbstractPackage {
 	 */
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		buffer.get(this.msgId);
-		this.pkTotal = buffer.get();
-		this.pkNumber = buffer.get();
-		this.registeredDelivery = buffer.get();
-		this.msgLevel = buffer.get();
-		this.serviceId = readFromBuffer(buffer, 10);
-		this.feeUserType = buffer.get();
-		this.feeTerminalId = readFromBuffer(buffer, 21);
-		this.tppId = buffer.get();
-		this.tpUdhi = buffer.get();
-		this.msgFmt = buffer.get();
-		this.msgSrc = readFromBuffer(buffer, 6);
-		this.feeType = readFromBuffer(buffer, 2);
-		this.feeCode = readFromBuffer(buffer, 6);
-		this.vaildTime = readFromBuffer(buffer, 17);
-		this.atTime = readFromBuffer(buffer, 17);
-		this.srcId = readFromBuffer(buffer, 21);
-		this.destUsrTl = buffer.get();
-		this.destTerminalId = readFromBuffer(buffer, this.destUsrTl*21);
-		this.msgLength = buffer.get();
-		this.msgContent = readFromBuffer(buffer, this.msgLength, Charset.forName(mapMsgFmt.get(this.msgFmt)));
+		this.msgType = read(buffer);
+		this.needReport = read(buffer);
+		this.priority = read(buffer);
+		this.serviceID = readString(buffer, 10);
+		this.feeType = readString(buffer, 2);
+		this.feeCode = readString(buffer, 6);
+		this.fixedFee = readString(buffer, 6);
+		this.msgFormat = read(buffer);
+		this.vaildTime = readString(buffer, 17);
+		this.atTime = readString(buffer, 17);
+		this.srcTermID = readString(buffer, 2);
+		this.chargeTermID = readString(buffer, 12);
+		this.destTermIDCount = read(buffer);
+		this.destTermID = readString(buffer, 21*this.destTermIDCount);
+		this.msgLength = read(buffer);		
+		this.msgContent = readString(buffer, this.msgLength, Charset.forName(mapMsgFmt.get(this.msgFormat)));
 		buffer.get(this.reserve);
 	}
 
 	/**
-	 * @return the msgId
+	 * @return the msgType
 	 */
-	public byte[] getMsgId() {
-		return msgId;
+	public byte getMsgType() {
+		return msgType;
 	}
 
 	/**
-	 * @param msgId the msgId to set
+	 * @param msgType the msgType to set
 	 */
-	public void setMsgId(byte[] msgId) {
-		this.msgId = msgId;
+	public void setMsgType(byte msgType) {
+		this.msgType = msgType;
 	}
 
 	/**
-	 * @return the pkTotal
+	 * @return the needReport
 	 */
-	public byte getPkTotal() {
-		return pkTotal;
+	public byte getNeedReport() {
+		return needReport;
 	}
 
 	/**
-	 * @param pkTotal the pkTotal to set
+	 * @param needReport the needReport to set
 	 */
-	public void setPkTotal(byte pkTotal) {
-		this.pkTotal = pkTotal;
+	public void setNeedReport(byte needReport) {
+		this.needReport = needReport;
 	}
 
 	/**
-	 * @return the pkNumber
+	 * @return the priority
 	 */
-	public byte getPkNumber() {
-		return pkNumber;
+	public byte getPriority() {
+		return priority;
 	}
 
 	/**
-	 * @param pkNumber the pkNumber to set
+	 * @param priority the priority to set
 	 */
-	public void setPkNumber(byte pkNumber) {
-		this.pkNumber = pkNumber;
+	public void setPriority(byte priority) {
+		this.priority = priority;
 	}
 
 	/**
-	 * @return the registeredDelivery
+	 * @return the serviceID
 	 */
-	public byte getRegisteredDelivery() {
-		return registeredDelivery;
+	public String getServiceID() {
+		return serviceID;
 	}
 
 	/**
-	 * @param registeredDelivery the registeredDelivery to set
+	 * @param serviceID the serviceID to set
 	 */
-	public void setRegisteredDelivery(byte registeredDelivery) {
-		this.registeredDelivery = registeredDelivery;
-	}
-
-	/**
-	 * @return the msgLevel
-	 */
-	public byte getMsgLevel() {
-		return msgLevel;
-	}
-
-	/**
-	 * @param msgLevel the msgLevel to set
-	 */
-	public void setMsgLevel(byte msgLevel) {
-		this.msgLevel = msgLevel;
-	}
-
-	/**
-	 * @return the serviceId
-	 */
-	public String getServiceId() {
-		return serviceId;
-	}
-
-	/**
-	 * @param serviceId the serviceId to set
-	 */
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
-	}
-
-	/**
-	 * @return the feeUserType
-	 */
-	public byte getFeeUserType() {
-		return feeUserType;
-	}
-
-	/**
-	 * @param feeUserType the feeUserType to set
-	 */
-	public void setFeeUserType(byte feeUserType) {
-		this.feeUserType = feeUserType;
-	}
-
-	/**
-	 * @return the feeTerminalId
-	 */
-	public String getFeeTerminalId() {
-		return feeTerminalId;
-	}
-
-	/**
-	 * @param feeTerminalId the feeTerminalId to set
-	 */
-	public void setFeeTerminalId(String feeTerminalId) {
-		this.feeTerminalId = feeTerminalId;
-	}
-
-	/**
-	 * @return the tppId
-	 */
-	public byte getTppId() {
-		return tppId;
-	}
-
-	/**
-	 * @param tppId the tppId to set
-	 */
-	public void setTppId(byte tppId) {
-		this.tppId = tppId;
-	}
-
-	/**
-	 * @return the tpUdhi
-	 */
-	public byte getTpUdhi() {
-		return tpUdhi;
-	}
-
-	/**
-	 * @param tpUdhi the tpUdhi to set
-	 */
-	public void setTpUdhi(byte tpUdhi) {
-		this.tpUdhi = tpUdhi;
-	}
-
-	/**
-	 * @return the msgFmt
-	 */
-	public byte getMsgFmt() {
-		return msgFmt;
-	}
-
-	/**
-	 * @param msgFmt the msgFmt to set
-	 */
-	public void setMsgFmt(byte msgFmt) {
-		this.msgFmt = msgFmt;
-	}
-
-	/**
-	 * @return the msgSrc
-	 */
-	public String getMsgSrc() {
-		return msgSrc;
-	}
-
-	/**
-	 * @param msgSrc the msgSrc to set
-	 */
-	public void setMsgSrc(String msgSrc) {
-		this.msgSrc = msgSrc;
+	public void setServiceID(String serviceID) {
+		this.serviceID = serviceID;
 	}
 
 	/**
@@ -324,6 +174,34 @@ public final class SubmitReqPkg extends AbstractPackage {
 	}
 
 	/**
+	 * @return the fixedFee
+	 */
+	public String getFixedFee() {
+		return fixedFee;
+	}
+
+	/**
+	 * @param fixedFee the fixedFee to set
+	 */
+	public void setFixedFee(String fixedFee) {
+		this.fixedFee = fixedFee;
+	}
+
+	/**
+	 * @return the msgFormat
+	 */
+	public byte getMsgFormat() {
+		return msgFormat;
+	}
+
+	/**
+	 * @param msgFormat the msgFormat to set
+	 */
+	public void setMsgFormat(byte msgFormat) {
+		this.msgFormat = msgFormat;
+	}
+
+	/**
 	 * @return the vaildTime
 	 */
 	public String getVaildTime() {
@@ -352,45 +230,59 @@ public final class SubmitReqPkg extends AbstractPackage {
 	}
 
 	/**
-	 * @return the srcId
+	 * @return the srcTermID
 	 */
-	public String getSrcId() {
-		return srcId;
+	public String getSrcTermID() {
+		return srcTermID;
 	}
 
 	/**
-	 * @param srcId the srcId to set
+	 * @param srcTermID the srcTermID to set
 	 */
-	public void setSrcId(String srcId) {
-		this.srcId = srcId;
+	public void setSrcTermID(String srcTermID) {
+		this.srcTermID = srcTermID;
 	}
 
 	/**
-	 * @return the destUsrTl
+	 * @return the chargeTermID
 	 */
-	public byte getDestUsrTl() {
-		return destUsrTl;
+	public String getChargeTermID() {
+		return chargeTermID;
 	}
 
 	/**
-	 * @param destUsrTl the destUsrTl to set
+	 * @param chargeTermID the chargeTermID to set
 	 */
-	public void setDestUsrTl(byte destUsrTl) {
-		this.destUsrTl = destUsrTl;
+	public void setChargeTermID(String chargeTermID) {
+		this.chargeTermID = chargeTermID;
 	}
 
 	/**
-	 * @return the destTerminalId
+	 * @return the destTermIDCount
 	 */
-	public String getDestTerminalId() {
-		return destTerminalId;
+	public byte getDestTermIDCount() {
+		return destTermIDCount;
 	}
 
 	/**
-	 * @param destTerminalId the destTerminalId to set
+	 * @param destTermIDCount the destTermIDCount to set
 	 */
-	public void setDestTerminalId(String destTerminalId) {
-		this.destTerminalId = destTerminalId;
+	public void setDestTermIDCount(byte destTermIDCount) {
+		this.destTermIDCount = destTermIDCount;
+	}
+
+	/**
+	 * @return the destTermID
+	 */
+	public String getDestTermID() {
+		return destTermID;
+	}
+
+	/**
+	 * @param destTermID the destTermID to set
+	 */
+	public void setDestTermID(String destTermID) {
+		this.destTermID = destTermID;
 	}
 
 	/**

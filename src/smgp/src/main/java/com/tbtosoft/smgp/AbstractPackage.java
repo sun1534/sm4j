@@ -94,8 +94,30 @@ abstract class AbstractPackage implements IPackage{
 	public int getCommandId() {
 		return commandId;
 	}
-	protected int writeToBuffer(ByteBuffer buffer, String octetString, int len, Charset charset){
-		byte[] tmp = octetString.getBytes(charset);
+	protected int write(ByteBuffer buffer, byte value){
+		buffer.put(value);
+		return 1;
+	}
+	protected byte read(ByteBuffer buffer){
+		return buffer.get();
+	}
+	protected int write(ByteBuffer buffer, byte[] values){
+		buffer.put(values);
+		return values.length;
+	}
+	protected void read(ByteBuffer buffer, byte[] values){
+		buffer.get(values);		
+	}
+	protected int writeInt(ByteBuffer buffer, int value){
+		buffer.putInt(value);
+		return 4;
+	}
+	protected int readInt(ByteBuffer buffer){		
+		return buffer.getInt();
+	}
+	
+	protected int writeString(ByteBuffer buffer, String octetString, int len, Charset charset){
+		byte[] tmp = null==octetString?new byte[0]:octetString.getBytes(charset);
 		int size = tmp.length > len?len:tmp.length;
 		buffer.put(tmp, 0, size);
 		while(len > size){
@@ -104,13 +126,13 @@ abstract class AbstractPackage implements IPackage{
 		}
 		return size;
 	}
-	protected int writeToBuffer(ByteBuffer buffer, String octetString, int len){
-		return writeToBuffer(buffer, octetString, len, Charset.defaultCharset());
+	protected int writeString(ByteBuffer buffer, String octetString, int len){
+		return writeString(buffer, octetString, len, Charset.defaultCharset());
 	}
-	protected String readFromBuffer(ByteBuffer buffer, int len){
-		return readFromBuffer(buffer, len, Charset.defaultCharset());
-	}
-	protected String readFromBuffer(ByteBuffer buffer, int len, Charset charset){		
+	protected String readString(ByteBuffer buffer, int len){
+		return readString(buffer, len, Charset.defaultCharset());
+	}	
+	protected String readString(ByteBuffer buffer, int len, Charset charset){		
 		byte[] tmp = new byte[len];
 		buffer.get(tmp);
 		int pos = 0;
@@ -121,5 +143,5 @@ abstract class AbstractPackage implements IPackage{
 			pos++;
 		}
 		return new String(tmp, 0, pos, charset);
-	}
+	}	
 }

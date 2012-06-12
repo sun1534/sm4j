@@ -33,26 +33,21 @@ public final class LoginReqPkg extends AbstractPackage {
 	protected int onToBuffer(ByteBuffer buffer) throws SmgpException {
 		this.timestamp = createTimestamp();		
 		int len = 0;
-		writeToBuffer(buffer, this.clientId, 8);
-		len+=8;
-		writeToBuffer(buffer, this.authenticatorClient, 16);
-		len+=16;
-		buffer.put(this.loginMode);
-		len+=1;
-		buffer.putInt(this.timestamp);
-		len+=4;
-		buffer.put(this.clientVersion);
-		len+=1;
+		len+=writeString(buffer, this.clientId, 8);
+		len+=writeString(buffer, this.authenticatorClient, 16);
+		len+=write(buffer, this.loginMode);
+		len+=writeInt(buffer, this.timestamp);
+		len+=write(buffer, this.clientVersion);		
 		return len;
 	}
 
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		this.clientId = readFromBuffer(buffer, 8);
-		this.authenticatorClient = readFromBuffer(buffer, 16);
-		this.loginMode = buffer.get();
-		this.timestamp = buffer.getInt();		
-		this.clientVersion = buffer.get();
+		this.clientId = readString(buffer, 8);
+		this.authenticatorClient = readString(buffer, 16);
+		this.loginMode = read(buffer);
+		this.timestamp = readInt(buffer);		
+		this.clientVersion = read(buffer);
 	}
 
 	/**

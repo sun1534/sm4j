@@ -15,11 +15,17 @@ import java.nio.ByteBuffer;
  *
  */
 public final class SubmitRspPkg extends AbstractPackage {
-	private byte[] msgId;
-	private byte result;
+	/**
+	 * 短消息流水号
+	 */
+	private byte[] msgId;	
+	/**
+	 * 请求返回结果
+	 */
+	private int status;
 	public SubmitRspPkg() {
 		super(Command.SUBMIT_RSP);		
-		this.msgId = new byte[8];
+		this.msgId = new byte[10];
 	}
 
 	/* (non-Javadoc)
@@ -28,10 +34,8 @@ public final class SubmitRspPkg extends AbstractPackage {
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) {
 		int len = 0;
-		buffer.put(this.msgId);
-		len+=this.msgId.length;
-		buffer.put(this.result);
-		len+=1;
+		len+=write(buffer, this.msgId);
+		len+=writeInt(buffer, this.status);		
 		return len;
 	}
 
@@ -40,8 +44,8 @@ public final class SubmitRspPkg extends AbstractPackage {
 	 */
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		buffer.get(this.msgId);
-		this.result = buffer.get();
+		read(buffer, this.msgId);
+		this.status = readInt(buffer);
 	}
 
 	/**
@@ -59,17 +63,16 @@ public final class SubmitRspPkg extends AbstractPackage {
 	}
 
 	/**
-	 * @return the result
+	 * @return the status
 	 */
-	public byte getResult() {
-		return result;
+	public int getStatus() {
+		return status;
 	}
 
 	/**
-	 * @param result the result to set
+	 * @param status the status to set
 	 */
-	public void setResult(byte result) {
-		this.result = result;
+	public void setStatus(int status) {
+		this.status = status;
 	}
-
 }
