@@ -31,20 +31,17 @@ public final class LoginRspPkg extends AbstractPackage{
 	@Override
 	protected int onToBuffer(ByteBuffer buffer)  {		
 		int len = 0;
-		buffer.putInt(this.status);
-		len+=4;
-		writeToBuffer(buffer, this.authenticatorServer, 16);
-		len+=16;
-		buffer.put(this.serverVersion);
-		len+=1;
+		len+=writeInt(buffer, this.status);
+		len+=writeString(buffer, this.authenticatorServer, 16);
+		len+=write(buffer, this.serverVersion);
 		return len;
 	}
 
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		this.status = buffer.getInt();		
-		this.authenticatorServer = readFromBuffer(buffer, 16);
-		this.serverVersion = buffer.get();
+		this.status = readInt(buffer);		
+		this.authenticatorServer = readString(buffer, 16);
+		this.serverVersion = read(buffer);
 	}
 	/**
 	 * @return the status
