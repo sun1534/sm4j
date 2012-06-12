@@ -88,6 +88,9 @@ public final class DeliverReqPkg extends AbstractPackage {
 		private String submitTime;//10bytes
 		private String doneTime;//10byte;
 		private int smscSequnce;//4bytes
+		public StatusReport(){
+			msgId = new byte[8];
+		}
 		public int toBuffer(ByteBuffer buffer){
 			int len = 0;
 			buffer.put(this.msgId);
