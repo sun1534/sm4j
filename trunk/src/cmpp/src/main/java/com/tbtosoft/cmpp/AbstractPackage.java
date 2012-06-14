@@ -122,4 +122,54 @@ abstract class AbstractPackage implements IPackage{
 		}
 		return new String(tmp, 0, pos, charset);
 	}
+	protected int write(ByteBuffer buffer, byte value){
+		buffer.put(value);
+		return 1;
+	}
+	protected byte read(ByteBuffer buffer){
+		return buffer.get();
+	}
+	protected int write(ByteBuffer buffer, byte[] values){
+		buffer.put(values);
+		return values.length;
+	}
+	protected void read(ByteBuffer buffer, byte[] values){
+		buffer.get(values);		
+	}
+	protected int writeInt(ByteBuffer buffer, int value){
+		buffer.putInt(value);
+		return 4;
+	}
+	protected int readInt(ByteBuffer buffer){		
+		return buffer.getInt();
+	}
+	
+	protected int writeString(ByteBuffer buffer, String octetString, int len, Charset charset){
+		byte[] tmp = null==octetString?new byte[0]:octetString.getBytes(charset);
+		int size = tmp.length > len?len:tmp.length;
+		buffer.put(tmp, 0, size);
+		while(len > size){
+			buffer.put((byte)0x00);
+			size++;
+		}
+		return size;
+	}
+	protected int writeString(ByteBuffer buffer, String octetString, int len){
+		return writeString(buffer, octetString, len, Charset.defaultCharset());
+	}
+	protected String readString(ByteBuffer buffer, int len){
+		return readString(buffer, len, Charset.defaultCharset());
+	}	
+	protected String readString(ByteBuffer buffer, int len, Charset charset){		
+		byte[] tmp = new byte[len];
+		buffer.get(tmp);
+		int pos = 0;
+		for (byte b : tmp) {
+			if(0x00 == b){
+				break;
+			}
+			pos++;
+		}
+		return new String(tmp, 0, pos, charset);
+	}
 }
