@@ -34,36 +34,25 @@ public final class ConnectReqPkg extends AbstractPackage {
 	}
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) throws CmppException {
-		this.timestamp = createTimestamp();
-		try {
-			this.authenticatorSource = createAuthenticatorSource(
-					this.sourceAddress, this.password, this.timestamp);
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			throw new CmppException(
-					"Create authenticator source failure(SourceAddr:"
-							+ this.authenticatorSource + " Password:"
-							+ this.password + " Timestamp:" + this.timestamp, e);
-		}
+		this.timestamp = createTimestamp();		
+		this.authenticatorSource = createAuthenticatorSource(
+				this.sourceAddress, this.password, this.timestamp);
+		
 		int len = 0;
-		writeToBuffer(buffer, this.sourceAddress, 6);
-		len+=6;
-		buffer.put(this.authenticatorSource);
-		len+=16;
-		buffer.put(this.version);
-		len+=1;
-		buffer.putInt(this.timestamp);
-		len+=4;
+		len+=writeString(buffer, this.sourceAddress, 6);		
+		len+=write(buffer, this.authenticatorSource);		
+		len+=write(buffer, this.version);		
+		len+=writeInt(buffer, this.timestamp);		
 		return len;
 	}
 
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		this.sourceAddress = readFromBuffer(buffer, 6);
-		this.authenticatorSource = new byte[16];
-		buffer.get(this.authenticatorSource);
-		this.version = buffer.get();
-		this.timestamp = buffer.getInt();
+		this.sourceAddress = readString(buffer, 6);
+		this.authenticatorSource = new byte[16];		
+		read(buffer, this.authenticatorSource);
+		this.version = read(buffer);
+		this.timestamp = readInt(buffer);
 	}
 
 	/**
@@ -122,15 +111,25 @@ public final class ConnectReqPkg extends AbstractPackage {
 		this.timestamp = timestamp;
 	}
 	
-	public byte[] createAuthenticatorSource(String sourceAddr, String password, Integer timestamp) throws NoSuchAlgorithmException{
-		ByteBuffer buffer = ByteBuffer.allocate(256);
-		writeToBuffer(buffer, sourceAddr, 6);
-		buffer.position(buffer.position()+9);
-		writeToBuffer(buffer, password, password.length());
-		writeToBuffer(buffer, timestamp.toString(), 10);
-		java.security.MessageDigest md5 = java.security.MessageDigest.getInstance("MD5");
-        md5.update(buffer.array());
-        return md5.digest();		
+	public byte[] createAuthenticatorSource(String sourceAddr, String password,
+			Integer timestamp) throws CmppException {
+		try {
+			ByteBuffer buffer = ByteBuffer.allocate(256);
+			writeToBuffer(buffer, sourceAddr, 6);
+			buffer.position(buffer.position() + 9);
+			writeToBuffer(buffer, password, password.length());
+			writeToBuffer(buffer, timestamp.toString(), 10);
+			java.security.MessageDigest md5 = java.security.MessageDigest
+					.getInstance("MD5");
+			md5.update(buffer.array());
+			return md5.digest();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			throw new CmppException(
+					"Create authenticator source failure(SourceAddr:"
+							+ this.authenticatorSource + " Password:"
+							+ this.password + " Timestamp:" + this.timestamp, e);
+		}
 	}
 	
 	private Integer createTimestamp(){
