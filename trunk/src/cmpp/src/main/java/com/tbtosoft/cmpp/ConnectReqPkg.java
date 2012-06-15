@@ -115,10 +115,10 @@ public final class ConnectReqPkg extends AbstractPackage {
 			Integer timestamp) throws CmppException {
 		try {
 			ByteBuffer buffer = ByteBuffer.allocate(256);
-			writeToBuffer(buffer, sourceAddr, 6);
+			writeString(buffer, sourceAddr, 6);
 			buffer.position(buffer.position() + 9);
-			writeToBuffer(buffer, password, password.length());
-			writeToBuffer(buffer, timestamp.toString(), 10);
+			writeString(buffer, password, password.length());
+			writeString(buffer, timestamp.toString(), 10);
 			java.security.MessageDigest md5 = java.security.MessageDigest
 					.getInstance("MD5");
 			md5.update(buffer.array());
@@ -127,8 +127,8 @@ public final class ConnectReqPkg extends AbstractPackage {
 			e.printStackTrace();
 			throw new CmppException(
 					"Create authenticator source failure(SourceAddr:"
-							+ this.authenticatorSource + " Password:"
-							+ this.password + " Timestamp:" + this.timestamp, e);
+							+ sourceAddr + " Password:"
+							+ password + " Timestamp:" + timestamp, e);
 		}
 	}
 	

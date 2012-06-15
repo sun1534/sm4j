@@ -11,6 +11,8 @@ package com.tbtosoft.cmpp;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 
+import com.tbtosoft.cmpp.exception.CmppException;
+
 /**
  * @author stephen
  *
@@ -31,28 +33,21 @@ public final class ConnectRspPkg extends AbstractPackage{
 	}
 
 	@Override
-	protected int onToBuffer(ByteBuffer buffer)  {
-		try {
-			this.authenticatorISMG = createAuthenticatorISMG(this.status, this.authenticatorSource, this.password);
-		} catch (NoSuchAlgorithmException e) {			
-			e.printStackTrace();
-		}
+	protected int onToBuffer(ByteBuffer buffer) throws CmppException  {		
+		this.authenticatorISMG = createAuthenticatorISMG(this.status, this.authenticatorSource, this.password);		
 		int len = 0;
-		buffer.put(this.status);
-		len+=1;
-		buffer.put(this.authenticatorISMG);
-		len+=16;
-		buffer.put(this.version);
-		len+=1;
+		len+=write(buffer, this.status);		
+		len+=write(buffer, this.authenticatorISMG);
+		len+=write(buffer, this.version);
 		return len;
 	}
 
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		this.status = buffer.get();
+		this.status = read(buffer);
 		this.authenticatorISMG = new byte[16];
-		buffer.get(this.authenticatorISMG);
-		this.version = buffer.get();
+		read(buffer, this.authenticatorISMG);
+		this.version = read(buffer);
 	}
 
 	/**
@@ -96,13 +91,21 @@ public final class ConnectRspPkg extends AbstractPackage{
 	public void setVersion(byte version) {
 		this.version = version;
 	}
-	public byte[] createAuthenticatorISMG(byte status, byte[] authenticatorSource, String password) throws NoSuchAlgorithmException{
-		ByteBuffer buffer = ByteBuffer.allocate(256);
-		buffer.put(status);
-		buffer.put(authenticatorSource);			
-		writeToBuffer(buffer, password, password.length());
-		java.security.MessageDigest md5 = java.security.MessageDigest.getInstance("MD5");
-        md5.update(buffer.array());
-        return md5.digest();		
+	public byte[] createAuthenticatorISMG(byte status, byte[] authenticatorSource, String password) throws CmppException{
+		try {
+			ByteBuffer buffer = ByteBuffer.allocate(256);
+			write(buffer, status);
+			write(buffer, authenticatorSource);
+			writeString(buffer, password, password.length());
+			java.security.MessageDigest md5 = java.security.MessageDigest.getInstance("MD5");
+			md5.update(buffer.array());
+			return md5.digest();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			throw new CmppException(
+					"Create authenticator ISMG failure(Status:"
+							+ status + " AuthenticatorSource:"
+							+ authenticatorSource + " Password:" + this.password, e);
+		}
 	}
 }

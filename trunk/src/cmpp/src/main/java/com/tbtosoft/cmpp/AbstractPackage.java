@@ -94,34 +94,7 @@ abstract class AbstractPackage implements IPackage{
 	public int getCommandId() {
 		return commandId;
 	}
-	protected int writeToBuffer(ByteBuffer buffer, String octetString, int len, Charset charset){
-		byte[] tmp = octetString.getBytes(charset);
-		int size = tmp.length > len?len:tmp.length;
-		buffer.put(tmp, 0, size);
-		while(len > size){
-			buffer.put((byte)0x00);
-			size++;
-		}
-		return size;
-	}
-	protected int writeToBuffer(ByteBuffer buffer, String octetString, int len){
-		return writeToBuffer(buffer, octetString, len, Charset.defaultCharset());
-	}
-	protected String readFromBuffer(ByteBuffer buffer, int len){
-		return readFromBuffer(buffer, len, Charset.defaultCharset());
-	}
-	protected String readFromBuffer(ByteBuffer buffer, int len, Charset charset){		
-		byte[] tmp = new byte[len];
-		buffer.get(tmp);
-		int pos = 0;
-		for (byte b : tmp) {
-			if(0x00 == b){
-				break;
-			}
-			pos++;
-		}
-		return new String(tmp, 0, pos, charset);
-	}
+
 	protected int write(ByteBuffer buffer, byte value){
 		buffer.put(value);
 		return 1;

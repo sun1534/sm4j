@@ -26,7 +26,7 @@ public final class ActiveTestRspPkg extends AbstractPackage {
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) {
 		int len = 0;
-		buffer.put(this.reserved);
+		len+=write(buffer, this.reserved);
 		return len;
 	}
 
@@ -35,7 +35,7 @@ public final class ActiveTestRspPkg extends AbstractPackage {
 	 */
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {		
-		this.reserved = buffer.get();
+		this.reserved = read(buffer);
 	}
 
 	/**

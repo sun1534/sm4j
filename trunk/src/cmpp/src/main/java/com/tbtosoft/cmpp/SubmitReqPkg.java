@@ -34,7 +34,7 @@ public final class SubmitReqPkg extends AbstractPackage {
 	private String atTime;//17bytes
 	private String srcId;//21bytes
 	private byte destUsrTl;
-	private String destTerminalId;//21*destUsrTl bytes
+	private String destTerminalId;//21*destUsrTl bytes	
 	private byte msgLength;
 	private String msgContent;
 	private byte[] reserve;//8bytes
@@ -50,51 +50,30 @@ public final class SubmitReqPkg extends AbstractPackage {
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) {
 		int len = 0;
-		buffer.put(this.msgId);
-		len+=this.msgId.length;
-		buffer.put(this.pkTotal);
-		len+=1;
-		buffer.put(this.pkNumber);
-		len+=1;
-		buffer.put(this.registeredDelivery);
-		len+=1;
-		buffer.put(this.msgLevel);
-		len+=1;
-		writeToBuffer(buffer, this.serviceId, 10);
-		len+=10;
-		buffer.put(this.feeUserType);
-		len+=1;
-		writeToBuffer(buffer, this.feeTerminalId, 21);
-		len+=21;
-		buffer.put(this.tppId);
-		len+=1;
-		buffer.put(this.tpUdhi);
-		len+=1;
-		buffer.put(this.msgFmt);
-		len+=1;
-		writeToBuffer(buffer, this.msgSrc, 6);
-		len+=6;
-		writeToBuffer(buffer, this.feeType, 2);
-		len+=2;
-		writeToBuffer(buffer, this.feeCode, 6);
-		len+=6;
-		writeToBuffer(buffer, this.vaildTime, 17);
-		len+=17;
-		writeToBuffer(buffer, this.atTime, 17);
-		len+=17;
-		writeToBuffer(buffer, this.srcId, 21);
-		len+=21;
-		buffer.put(this.destUsrTl);
-		len+=1;
-		writeToBuffer(buffer, this.destTerminalId, this.destTerminalId.length());
+		len+=write(buffer, this.msgId);
+		len+=write(buffer, this.pkTotal);
+		len+=write(buffer, this.pkNumber);
+		len+=write(buffer, this.registeredDelivery);
+		len+=write(buffer, this.msgLevel);
+		len+=writeString(buffer, this.serviceId, 10);
+		len+=write(buffer, this.feeUserType);
+		len+=writeString(buffer, this.feeTerminalId, 21);
+		len+=write(buffer, this.tppId);
+		len+=write(buffer, this.tpUdhi);
+		len+=write(buffer, this.msgFmt);
+		len+=writeString(buffer, this.msgSrc, 6);
+		len+=writeString(buffer, this.feeType, 2);
+		len+=writeString(buffer, this.feeCode, 6);
+		len+=writeString(buffer, this.vaildTime, 17);
+		len+=writeString(buffer, this.atTime, 17);
+		len+=writeString(buffer, this.srcId, 21);
+		len+=write(buffer, this.destUsrTl);
+		len+=writeString(buffer, this.destTerminalId, this.destTerminalId.length());
 		len+=this.destTerminalId.length();		
 		byte[] tmpMsg = this.msgContent.getBytes(Charset.forName(mapMsgFmt.get(this.msgFmt)));
-		buffer.put((byte)tmpMsg.length);
-		len+=1;
-		buffer.put(tmpMsg);
-		len+=tmpMsg.length;
-		buffer.put(this.reserve);
-		len+=this.reserve.length;
+		len+=write(buffer, (byte)tmpMsg.length);
+		len+=write(buffer, tmpMsg);
+		len+=write(buffer, this.reserve);
 		return len;
 	}
 
@@ -104,27 +83,27 @@ public final class SubmitReqPkg extends AbstractPackage {
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
 		buffer.get(this.msgId);
-		this.pkTotal = buffer.get();
-		this.pkNumber = buffer.get();
-		this.registeredDelivery = buffer.get();
-		this.msgLevel = buffer.get();
-		this.serviceId = readFromBuffer(buffer, 10);
-		this.feeUserType = buffer.get();
-		this.feeTerminalId = readFromBuffer(buffer, 21);
-		this.tppId = buffer.get();
-		this.tpUdhi = buffer.get();
-		this.msgFmt = buffer.get();
-		this.msgSrc = readFromBuffer(buffer, 6);
-		this.feeType = readFromBuffer(buffer, 2);
-		this.feeCode = readFromBuffer(buffer, 6);
-		this.vaildTime = readFromBuffer(buffer, 17);
-		this.atTime = readFromBuffer(buffer, 17);
-		this.srcId = readFromBuffer(buffer, 21);
-		this.destUsrTl = buffer.get();
-		this.destTerminalId = readFromBuffer(buffer, this.destUsrTl*21);
-		this.msgLength = buffer.get();
-		this.msgContent = readFromBuffer(buffer, this.msgLength, Charset.forName(mapMsgFmt.get(this.msgFmt)));
-		buffer.get(this.reserve);
+		this.pkTotal = read(buffer);
+		this.pkNumber = read(buffer);
+		this.registeredDelivery = read(buffer);
+		this.msgLevel = read(buffer);
+		this.serviceId = readString(buffer, 10);
+		this.feeUserType = read(buffer);
+		this.feeTerminalId = readString(buffer, 21);
+		this.tppId = read(buffer);
+		this.tpUdhi = read(buffer);
+		this.msgFmt = read(buffer);
+		this.msgSrc = readString(buffer, 6);
+		this.feeType = readString(buffer, 2);
+		this.feeCode = readString(buffer, 6);
+		this.vaildTime = readString(buffer, 17);
+		this.atTime = readString(buffer, 17);
+		this.srcId = readString(buffer, 21);
+		this.destUsrTl = read(buffer);
+		this.destTerminalId = readString(buffer, this.destUsrTl*21);
+		this.msgLength = read(buffer);
+		this.msgContent = readString(buffer, this.msgLength, Charset.forName(mapMsgFmt.get(this.msgFmt)));
+		read(buffer, this.reserve);
 	}
 
 	/**
