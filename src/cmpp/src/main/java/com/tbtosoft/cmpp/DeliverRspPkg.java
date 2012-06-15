@@ -15,7 +15,23 @@ import java.nio.ByteBuffer;
  *
  */
 public final class DeliverRspPkg extends AbstractPackage {
+	/**
+	 * 信息标识（CMPP_DELIVER中的Msg_Id字段）
+	 */
 	private byte[] msgId;
+	/**
+	 * 结果
+	 * 0：正确
+	 * 1：消息结构错
+ 	 * 2：命令字错
+ 	 * 3：消息序号重复
+	 * 4：消息长度错
+	 * 5：资费代码错
+	 * 6：超过最大信息长
+	 * 7：业务代码错
+	 * 8: 流量控制错
+	 * 9~ ：其他错误
+	 */
 	private byte result;
 	protected DeliverRspPkg() {
 		super(Command.DELIVER_RSP);	

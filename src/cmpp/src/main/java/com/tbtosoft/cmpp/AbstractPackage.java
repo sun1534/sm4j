@@ -24,8 +24,8 @@ abstract class AbstractPackage implements IPackage{
 	protected final static Map<Integer, String> mapMsgFmt = new HashMap<Integer, String>();
 	static{
 		mapMsgFmt.put(0, "gb2312");
-//		mapMsgFmt.put(3, "");
-//		mapMsgFmt.put(4, "");
+		mapMsgFmt.put(3, "gb2312");
+		mapMsgFmt.put(4, "gb2312");
 		mapMsgFmt.put(8, "UnicodeBigUnmarked");
 		mapMsgFmt.put(15, "gb2312");
 	}
