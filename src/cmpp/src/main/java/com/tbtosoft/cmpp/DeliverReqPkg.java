@@ -38,28 +38,17 @@ public final class DeliverReqPkg extends AbstractPackage {
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) {
 		int len = 0;
-		buffer.put(this.msgId);
-		len+=this.msgId.length;
-		writeToBuffer(buffer, this.destId, 21);
-		len+=21;
-		writeToBuffer(buffer, this.serviceId, 10);
-		len+=10;
-		buffer.put(this.tppId);
-		len+=1;
-		buffer.put(this.tpUdhi);
-		len+=1;
-		buffer.put(this.msgFmt);
-		len+=1;
-		writeToBuffer(buffer, this.srcTerminalId, 21);
-		len+=21;
-		buffer.put(this.registeredDelivery);
-		len+=1;
-		buffer.put(this.msgLength);
-		len+=1;
-		buffer.put(this.msgContent);
-		len+=this.msgContent.length;
-		buffer.put(this.reserve);
-		len+=this.reserve.length;
+		len+=write(buffer, this.msgId);
+		len+=writeString(buffer, this.destId, 21);	
+		len+=writeString(buffer, this.serviceId, 10);	
+		len+=write(buffer, this.tppId);		
+		len+=write(buffer, this.tpUdhi);
+		len+=write(buffer, this.msgFmt);
+		len+=writeString(buffer, this.srcTerminalId, 21);		
+		len+=write(buffer, this.registeredDelivery);		
+		len+=write(buffer, this.msgLength);		
+		len+=write(buffer, this.msgContent);	
+		len+=write(buffer, this.reserve);	
 		return len;
 	}
 
@@ -68,18 +57,18 @@ public final class DeliverReqPkg extends AbstractPackage {
 	 */
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		buffer.get(this.msgId);
-		this.destId = readFromBuffer(buffer, 21);
-		this.serviceId = readFromBuffer(buffer, 10);
-		this.tppId = buffer.get();
-		this.tpUdhi = buffer.get();
-		this.msgFmt = buffer.get();
-		this.srcTerminalId = readFromBuffer(buffer, 21);
-		this.registeredDelivery = buffer.get();
-		this.msgLength = buffer.get();
+		read(buffer, this.msgId);
+		this.destId = readString(buffer, 21);
+		this.serviceId = readString(buffer, 10);
+		this.tppId = read(buffer);
+		this.tpUdhi = read(buffer);
+		this.msgFmt = read(buffer);
+		this.srcTerminalId = readString(buffer, 21);
+		this.registeredDelivery = read(buffer);
+		this.msgLength = read(buffer);
 		this.msgContent = new byte[this.msgLength];
-		buffer.get(this.msgContent);
-		buffer.get(this.reserve);
+		read(buffer, this.msgContent);
+		read(buffer, this.reserve);
 	}
 	
 	public class StatusReport{
@@ -93,25 +82,20 @@ public final class DeliverReqPkg extends AbstractPackage {
 		}
 		public int toBuffer(ByteBuffer buffer){
 			int len = 0;
-			buffer.put(this.msgId);
-			len+=this.msgId.length;
-			writeToBuffer(buffer, this.stat, 7);
-			len+=7;
-			writeToBuffer(buffer, this.submitTime, 10);
-			len+=10;
-			writeToBuffer(buffer, this.doneTime, 10);
-			len+=10;
-			buffer.putInt(this.smscSequnce);
-			len+=4;
+			len+=write(buffer, this.msgId);
+			len+=writeString(buffer, this.stat, 7);
+			len+=writeString(buffer, this.submitTime, 10);
+			len+=writeString(buffer, this.doneTime, 10);
+			len+=writeInt(buffer, this.smscSequnce);
 			return len;
 		}
 				
 		public void loadBuffer(ByteBuffer buffer){
-			buffer.get(this.msgId);
-			this.stat = readFromBuffer(buffer, 7);
-			this.submitTime = readFromBuffer(buffer, 10);
-			this.doneTime = readFromBuffer(buffer, 10);
-			this.smscSequnce = buffer.getInt();
+			read(buffer, this.msgId);
+			this.stat = readString(buffer, 7);
+			this.submitTime = readString(buffer, 10);
+			this.doneTime = readString(buffer, 10);
+			this.smscSequnce = read(buffer);
 		}
 
 		/**

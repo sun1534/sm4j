@@ -28,10 +28,8 @@ public final class SubmitRspPkg extends AbstractPackage {
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) {
 		int len = 0;
-		buffer.put(this.msgId);
-		len+=this.msgId.length;
-		buffer.put(this.result);
-		len+=1;
+		len+=write(buffer, this.msgId);
+		len+=write(buffer, this.result);
 		return len;
 	}
 
@@ -40,8 +38,8 @@ public final class SubmitRspPkg extends AbstractPackage {
 	 */
 	@Override
 	protected void onLoadBuffer(ByteBuffer buffer) {
-		buffer.get(this.msgId);
-		this.result = buffer.get();
+		read(buffer, this.msgId);
+		this.result = read(buffer);
 	}
 
 	/**
