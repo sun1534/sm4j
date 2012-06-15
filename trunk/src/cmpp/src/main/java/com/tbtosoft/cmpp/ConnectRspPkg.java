@@ -18,8 +18,26 @@ import com.tbtosoft.cmpp.exception.CmppException;
  *
  */
 public final class ConnectRspPkg extends AbstractPackage{
+	/**
+	 * 状态
+	 * 0：正确
+	 * 1：消息结构错
+ 	 * 2：非法源地址
+ 	 * 3：认证错
+ 	 * 4：版本太高
+  	 * 5~ ：其他错误
+	 */
 	private byte status;
+	/**
+	 * ISMG认证码，用于鉴别ISMG。
+	 * 其值通过单向MD5 hash计算得出，表示如下：
+	 * AuthenticatorISMG =MD5（Status+AuthenticatorSource+shared secret），Shared secret 由中国移动与源地址实体事先商定，AuthenticatorSource为源地址实体发送给ISMG的对应消息CMPP_Connect中的值。
+ 	 * 认证出错时，此项为空。
+	 */
 	private byte[] authenticatorISMG;
+	/**
+	 * 服务器支持的最高版本号
+	 */
 	private byte version;
 	private String password;
 	private byte[] authenticatorSource;

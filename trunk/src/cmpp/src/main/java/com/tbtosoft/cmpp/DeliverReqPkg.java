@@ -9,29 +9,92 @@
 package com.tbtosoft.cmpp;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+
+import com.tbtosoft.cmpp.exception.CmppException;
 
 /**
  * @author stephen
  *
  */
 public final class DeliverReqPkg extends AbstractPackage {
+	/**
+	 * 信息标识
+	 * 生成算法如下：
+	 * 采用64位（8字节）的整数：
+	 * （1）	时间（格式为MMDDHHMMSS，即月日时分秒）：bit64~bit39，其中
+	 * bit64~bit61：月份的二进制表示；
+	 * bit60~bit56：日的二进制表示；
+	 * bit55~bit51：小时的二进制表示；
+	 * bit50~bit45：分的二进制表示；
+	 * bit44~bit39：秒的二进制表示；
+	 * （2）	短信网关代码：bit38~bit17，把短信网关的代码转换为整数填写到该字段中。
+	 * （3）	序列号：bit16~bit1，顺序增加，步长为1，循环使用。
+	 * 各部分如不能填满，左补零，右对齐。
+	 */
 	private byte[] msgId;//8bytes
+	/**
+	 * 目的号码 
+	 * SP的服务代码，一般4--6位，或者是前缀为服务代码的长号码；该号码是手机用户短消息的被叫号码。
+	 */
 	private String destId;//21bytes
+	/**
+	 * 业务类型，是数字、字母和符号的组合。
+	 */
 	private String serviceId;//10bytes
+	/**
+	 * GSM协议类型。详细解释请参考GSM03.40中的9.2.3.9
+	 */
 	private byte tppId;
+	/**
+	 * GSM协议类型。详细解释请参考GSM03.40中的9.2.3.23，仅使用1位，右对齐
+	 */
 	private byte tpUdhi;
+	/**
+	 * 信息格式
+  	 * 0：ASCII串
+  	 * 3：短信写卡操作
+  	 * 4：二进制信息
+  	 * 8：UCS2编码
+	 * 15：含GB汉字 
+	 */
 	private byte msgFmt;
+	/**
+	 * 源终端MSISDN号码（状态报告时填为CMPP_SUBMIT消息的目的终端号码）
+	 */
 	private String srcTerminalId;//21bytes
+	/**
+	 * 是否为状态报告
+	 * 0：非状态报告
+	 * 1：状态报告
+	 */
 	private byte registeredDelivery;
-	private byte msgLength;
+	/**
+	 * 消息内容
+	 */
 	private byte[] msgContent;
+	/**
+	 * 保留
+	 */
 	private byte[] reserve;//8bytes
-	protected DeliverReqPkg() {
+	public DeliverReqPkg() {
 		super(Command.DELIVER_REQ);	
 		this.msgId = new byte[8];
 		this.reserve = new byte[8];
 	}
-
+	public DeliverReqPkg(byte msgFmt, String content){
+		this();
+		this.registeredDelivery = 0;
+		this.msgFmt = msgFmt;
+		msgContent = content.getBytes(Charset.forName(mapMsgFmt.get(this.msgFmt)));
+	}
+	public DeliverReqPkg(StatusReport statusReport){
+		this();
+		this.registeredDelivery = 1;
+		this.msgContent = new byte[StatusReport.LENGTH];
+		statusReport.toBuffer(ByteBuffer.wrap(this.msgContent));
+	}
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.cmpp.AbstractPackage#onToBuffer(java.nio.ByteBuffer)
 	 */
@@ -46,7 +109,7 @@ public final class DeliverReqPkg extends AbstractPackage {
 		len+=write(buffer, this.msgFmt);
 		len+=writeString(buffer, this.srcTerminalId, 21);		
 		len+=write(buffer, this.registeredDelivery);		
-		len+=write(buffer, this.msgLength);		
+		len+=write(buffer, (byte)this.msgContent.length);		
 		len+=write(buffer, this.msgContent);	
 		len+=write(buffer, this.reserve);	
 		return len;
@@ -65,8 +128,8 @@ public final class DeliverReqPkg extends AbstractPackage {
 		this.msgFmt = read(buffer);
 		this.srcTerminalId = readString(buffer, 21);
 		this.registeredDelivery = read(buffer);
-		this.msgLength = read(buffer);
-		this.msgContent = new byte[this.msgLength];
+		byte msgLength = read(buffer);
+		this.msgContent = new byte[msgLength];
 		read(buffer, this.msgContent);
 		read(buffer, this.reserve);
 	}
@@ -76,7 +139,9 @@ public final class DeliverReqPkg extends AbstractPackage {
 		private String stat;//7bytes;
 		private String submitTime;//10bytes
 		private String doneTime;//10byte;
+		private String destTerminalId;//21bytes
 		private int smscSequnce;//4bytes
+		private final static int LENGTH=8+7+10+10+21+4;
 		public StatusReport(){
 			msgId = new byte[8];
 		}
@@ -86,6 +151,7 @@ public final class DeliverReqPkg extends AbstractPackage {
 			len+=writeString(buffer, this.stat, 7);
 			len+=writeString(buffer, this.submitTime, 10);
 			len+=writeString(buffer, this.doneTime, 10);
+			len+=writeString(buffer, this.destTerminalId, 21);
 			len+=writeInt(buffer, this.smscSequnce);
 			return len;
 		}
@@ -95,6 +161,7 @@ public final class DeliverReqPkg extends AbstractPackage {
 			this.stat = readString(buffer, 7);
 			this.submitTime = readString(buffer, 10);
 			this.doneTime = readString(buffer, 10);
+			this.destTerminalId = readString(buffer, 21);
 			this.smscSequnce = read(buffer);
 		}
 
@@ -281,21 +348,7 @@ public final class DeliverReqPkg extends AbstractPackage {
 	public void setRegisteredDelivery(byte registeredDelivery) {
 		this.registeredDelivery = registeredDelivery;
 	}
-
-	/**
-	 * @return the msgLength
-	 */
-	public byte getMsgLength() {
-		return msgLength;
-	}
-
-	/**
-	 * @param msgLength the msgLength to set
-	 */
-	public void setMsgLength(byte msgLength) {
-		this.msgLength = msgLength;
-	}
-
+	
 	/**
 	 * @return the msgContent
 	 */
@@ -309,7 +362,20 @@ public final class DeliverReqPkg extends AbstractPackage {
 	public void setMsgContent(byte[] msgContent) {
 		this.msgContent = msgContent;
 	}
-
+	public String getMsgContentString() throws CmppException{
+		try{
+		return new String(this.msgContent, 0, this.msgContent.length, 
+				Charset.forName(mapMsgFmt.get(this.msgFmt)));
+		}catch (Exception e) {
+			throw new CmppException("msgContent hex:"+Arrays.toString(this.msgContent)+
+					" msgFmt:"+this.msgFmt, e);
+		}
+	}
+	public StatusReport getStatusReport(){
+		StatusReport statusReport = new StatusReport();
+		statusReport.loadBuffer(ByteBuffer.wrap(this.msgContent));
+		return statusReport;
+	}
 	/**
 	 * @return the reserve
 	 */

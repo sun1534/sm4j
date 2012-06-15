@@ -20,16 +20,35 @@ import com.tbtosoft.cmpp.exception.CmppException;
  *
  */
 public final class ConnectReqPkg extends AbstractPackage {
+	/**
+	 * 源地址，此处为SP_Id，即SP的企业代码。
+	 */
 	private String sourceAddress;
+	/**
+	 * 用于鉴别源地址。其值通过单向MD5 hash计算得出，表示如下：
+	 * AuthenticatorSource =
+	 * MD5（Source_Addr+9 字节的0 +shared secret+timestamp）
+	 * Shared secret 由中国移动与源地址实体事先商定，timestamp格式为：MMDDHHMMSS，即月日时分秒，10位。
+	 */
 	private byte[] authenticatorSource;
+	/**
+	 * 双方协商的版本号(高位4bit表示主版本号,低位4bit表示次版本号)
+	 */
 	private byte version;
+	/**
+	 * 时间戳的明文,由客户端产生,格式为MMDDHHMMSS，即月日时分秒，10位数字的整型，右对齐 。
+	 */
 	private Integer timestamp;
+	/**
+	 * shared secret
+	 */
 	private String password;
 	public ConnectReqPkg() {
 		super(Command.CONNECT_REQ);		
 	}
-	public ConnectReqPkg(String password){
+	public ConnectReqPkg(String sourceAddr, String password){
 		this();
+		this.sourceAddress = sourceAddr;
 		this.password = password;
 	}
 	@Override
