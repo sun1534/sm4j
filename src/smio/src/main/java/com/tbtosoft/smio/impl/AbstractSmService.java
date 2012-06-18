@@ -8,8 +8,6 @@
  */
 package com.tbtosoft.smio.impl;
 
-import java.util.Collection;
-
 import com.tbtosoft.smio.ISmListener;
 import com.tbtosoft.smio.IoSmService;
 
@@ -17,29 +15,28 @@ import com.tbtosoft.smio.IoSmService;
  * @author chun.cheng
  *
  */
-class AbstractSmService implements IoSmService {
+abstract class AbstractSmService<T> implements IoSmService<T> {
 	
-	private ISmListener smListener;
-	/* (non-Javadoc)
-	 * @see com.tbtosoft.smio.IoSmHandler#submit(java.util.Collection, java.lang.String)
-	 */
-	@Override
-	public boolean submit(Collection<String> mobiles, String content) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	public void setSmListener(ISmListener smListener) {
+	private ISmListener<T> smListener;
+
+	public void setSmListener(ISmListener<T> smListener) {
 		this.smListener = smListener;
 	}
-	enum SmsStat{
-		SS_NONE,
-		SS_WAIT_FOR_SUBMIT_RESPONSE,
-		SS_WARI_FOR_DELIVER_REPORT
+
+	@Override
+	public boolean write(T t) {
+		smListener.onReceive(t, this);
+		return false;
 	}
-	class SmsItem{
-		public String content;
-		public Collection<String> mobiles;
-		public SmsStat smsStat = SmsStat.SS_NONE;
-		public byte[] msgid;
+
+	@Override
+	public boolean start() {
+		return onStart();
 	}
+	protected abstract boolean onStart();
+	@Override
+	public void stop() {
+		onStop();
+	}
+	protected abstract void onStop();
 }
