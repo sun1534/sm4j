@@ -8,6 +8,18 @@
  */
 package com.tbtosoft.smio.impl;
 
-public class SgipSmService {
+public class SgipSmService extends AbstractSmService<com.tbtosoft.sgip.IPackage>{
+
+	@Override
+	protected boolean onStart() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

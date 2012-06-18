@@ -8,12 +8,13 @@
  */
 package com.tbtosoft.smio;
 
-import java.util.Collection;
 
 /**
  * @author chun.cheng
  *
  */
-public interface IoSmService {
-	public boolean submit(Collection<String> mobiles, String content);
+public interface IoSmService<T> {
+	public boolean start();
+	public boolean write(T t);
+	public void stop();
 }

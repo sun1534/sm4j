@@ -12,7 +12,6 @@ package com.tbtosoft.smio;
  * @author chun.cheng
  *
  */
-public interface ISmListener {
-	public void onDeliver(String mobile, String content, String accessCode);
-	public void onReport(String msgid, String mobile, String state);
+public interface ISmListener<T> {
+	public void onReceive(T t, IoSmService<T> service);
 }
