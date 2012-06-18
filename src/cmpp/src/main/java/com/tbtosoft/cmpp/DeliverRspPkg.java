@@ -33,9 +33,12 @@ public final class DeliverRspPkg extends AbstractPackage {
 	 * 9~ ：其他错误
 	 */
 	private byte result;
-	protected DeliverRspPkg() {
+	public DeliverRspPkg() {
+		this(new byte[8]);
+	}
+	public DeliverRspPkg(byte[] msgId){
 		super(Command.DELIVER_RSP);	
-		this.msgId = new byte[8];
+		this.msgId = msgId;
 	}
 
 	/* (non-Javadoc)

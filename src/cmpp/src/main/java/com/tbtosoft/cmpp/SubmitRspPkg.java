@@ -46,10 +46,12 @@ public final class SubmitRspPkg extends AbstractPackage {
 	 */
 	private byte result;
 	public SubmitRspPkg() {
-		super(Command.SUBMIT_RSP);		
-		this.msgId = new byte[8];
+		this(new byte[8]);
 	}
-
+	public SubmitRspPkg(byte[] msgId){
+		super(Command.SUBMIT_RSP);		
+		this.msgId = msgId;
+	}
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.cmpp.AbstractPackage#onToBuffer(java.nio.ByteBuffer)
 	 */

@@ -28,13 +28,13 @@ abstract class AbstractPackage implements IPackage{
 		mapMsgFmt.put(4, "gb2312");
 		mapMsgFmt.put(8, "UnicodeBigUnmarked");
 		mapMsgFmt.put(15, "gb2312");
-	}
-	private static int globalSequenceNumber = 0;
+	}	
 	private int length;
 	private final int commandId;
 	private int sequence;
-	private static synchronized int genNextGlobalSequenceNumber(){
-		return globalSequenceNumber++;
+	private static ISequenceFactory sequenceFactory = new DefaultSequenceFactory();
+	private int genNextGlobalSequenceNumber(){
+		return sequenceFactory.next();
 	}
 	protected AbstractPackage(int cmd){
 		commandId = cmd;
@@ -145,4 +145,16 @@ abstract class AbstractPackage implements IPackage{
 		}
 		return new String(tmp, 0, pos, charset);
 	}
+	/**
+	 * @return the sequenceFactory
+	 */
+	protected final static ISequenceFactory getSequenceFactory() {
+		return AbstractPackage.sequenceFactory;
+	}
+	/**
+	 * @param sequenceFactory the sequenceFactory to set
+	 */
+	protected final static void setSequenceFactory(ISequenceFactory sequenceFactory) {
+		AbstractPackage.sequenceFactory = sequenceFactory;
+	}	
 }

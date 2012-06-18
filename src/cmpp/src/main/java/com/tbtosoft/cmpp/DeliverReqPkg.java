@@ -79,18 +79,21 @@ public final class DeliverReqPkg extends AbstractPackage {
 	 */
 	private byte[] reserve;//8bytes
 	public DeliverReqPkg() {
+		this(new byte[8]);		
+	}
+	public DeliverReqPkg(byte[] msgId){
 		super(Command.DELIVER_REQ);	
-		this.msgId = new byte[8];
+		this.msgId = msgId;
 		this.reserve = new byte[8];
 	}
-	public DeliverReqPkg(byte msgFmt, String content){
-		this();
+	public DeliverReqPkg(byte[] msgId, byte msgFmt, String content){
+		this(msgId);
 		this.registeredDelivery = 0;
 		this.msgFmt = msgFmt;
 		msgContent = content.getBytes(Charset.forName(mapMsgFmt.get(this.msgFmt)));
 	}
-	public DeliverReqPkg(StatusReport statusReport){
-		this();
+	public DeliverReqPkg(byte[] msgId, StatusReport statusReport){
+		this(msgId);
 		this.registeredDelivery = 1;
 		this.msgContent = new byte[StatusReport.LENGTH];
 		statusReport.toBuffer(ByteBuffer.wrap(this.msgContent));
@@ -143,7 +146,10 @@ public final class DeliverReqPkg extends AbstractPackage {
 		private int smscSequnce;//4bytes
 		private final static int LENGTH=8+7+10+10+21+4;
 		public StatusReport(){
-			msgId = new byte[8];
+			this.msgId = new byte[8];
+		}
+		public StatusReport(byte[] msgId){
+			this.msgId = msgId;
 		}
 		public int toBuffer(ByteBuffer buffer){
 			int len = 0;
