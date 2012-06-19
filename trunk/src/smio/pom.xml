@@ -33,5 +33,15 @@
     	<version>1.2.16</version>
     	<type>jar</type>
     </dependency>
+    <dependency>
+    	<groupId>com.tbtosoft</groupId>
+    	<artifactId>cmpp</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.tbtosoft</groupId>
+    	<artifactId>sgip</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>
