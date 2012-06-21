@@ -8,10 +8,15 @@
  */
 package com.tbtosoft.smio.session;
 
+import java.net.SocketAddress;
+
+import org.jboss.netty.bootstrap.Bootstrap;
+
 /**
  * @author chengchun
  *
  */
 public interface ISessionFactory {
-	public ISession create(IConfig config);
+	public ISession newSession(SocketAddress socketAddress, Object attachment);
+	public void setBootstrap(Bootstrap bootstrap);
 }

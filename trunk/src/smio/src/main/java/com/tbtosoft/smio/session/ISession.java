@@ -13,5 +13,7 @@ package com.tbtosoft.smio.session;
  *
  */
 public interface ISession {
-	
+	public boolean open();
+	public void close();
+	public Object getAttachment();
 }

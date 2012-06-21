@@ -8,12 +8,12 @@
  */
 package com.tbtosoft.smio.session.impl;
 
-import com.tbtosoft.smio.session.CmppConfig;
-import com.tbtosoft.smio.session.IConfig;
+import java.net.SocketAddress;
+
+import org.jboss.netty.bootstrap.Bootstrap;
+
 import com.tbtosoft.smio.session.ISession;
 import com.tbtosoft.smio.session.ISessionFactory;
-import com.tbtosoft.smio.session.SgipConfig;
-import com.tbtosoft.smio.session.SmgpConfig;
 
 /**
  * @author chengchun
@@ -21,21 +21,23 @@ import com.tbtosoft.smio.session.SmgpConfig;
  */
 abstract class BasicSessionFactory implements ISessionFactory{
 
+	protected Bootstrap bootstrap;
+	
 	/* (non-Javadoc)
-	 * @see com.tbtosoft.smio.session.ISessionFactory#create(com.tbtosoft.smio.session.IConfig)
+	 * @see com.tbtosoft.smio.session.ISessionFactory#setBootstrap(org.jboss.netty.bootstrap.Bootstrap)
 	 */
 	@Override
-	public ISession create(IConfig config) {
-		if(config instanceof CmppConfig){
-			return createCmppSession(config);
-		} else if(config instanceof SgipConfig){
-			return createSgipSession(config);
-		} else if(config instanceof SmgpConfig){
-			return createSmgpSession(config);
-		}
-		return null;
+	public void setBootstrap(Bootstrap bootstrap) {
+		this.bootstrap = bootstrap;
 	}
-	protected abstract ISession createCmppSession(IConfig config);
-	protected abstract ISession createSgipSession(IConfig config);
-	protected abstract ISession createSmgpSession(IConfig config);
+	
+	/* (non-Javadoc)
+	 * @see com.tbtosoft.smio.session.ISessionFactory#newSession(java.net.SocketAddress, java.lang.Object)
+	 */
+	@Override
+	public ISession newSession(SocketAddress socketAddress, Object attachment) {
+		
+		return newSessionImpl(socketAddress, attachment);
+	}
+	protected abstract ISession newSessionImpl(SocketAddress socketAddress, Object attachment);	
 }

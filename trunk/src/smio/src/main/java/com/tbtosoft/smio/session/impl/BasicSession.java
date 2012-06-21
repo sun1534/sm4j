@@ -8,7 +8,8 @@
  */
 package com.tbtosoft.smio.session.impl;
 
-import com.tbtosoft.smio.session.IConfig;
+import java.net.SocketAddress;
+
 import com.tbtosoft.smio.session.ISession;
 
 /**
@@ -17,23 +18,30 @@ import com.tbtosoft.smio.session.ISession;
  */
 abstract class BasicSession implements ISession {
 	private String name;
-	
-	private IConfig config;
+	private Object attachment;
+	private SocketAddress socketAddress;
 	
 	private Thread thread;
-	private boolean threadRunable;
+	private volatile boolean threadRunable;
 	
 	protected BasicSession(){
-		threadRunable = true;
-		thread = new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				threadProc();			
-			}
-		});
-		thread.setName("Session:"+this.name);
-		thread.start();
+		
+	}
+	protected BasicSession(SocketAddress socketAddress){
+		setSocketAddress(socketAddress);
+	}
+	
+	/**
+	 * @return the socketAddress
+	 */
+	public final SocketAddress getSocketAddress() {
+		return socketAddress;
+	}
+	/**
+	 * @param socketAddress the socketAddress to set
+	 */
+	public final void setSocketAddress(SocketAddress socketAddress) {
+		this.socketAddress = socketAddress;
 	}
 	private final void threadProc(){
 //		long lastTimestamp = System.currentTimeMillis();
@@ -48,6 +56,52 @@ abstract class BasicSession implements ISession {
 		}
 	}
 	protected abstract void loop() throws InterruptedException;
+	
+	
+	/* (non-Javadoc)
+	 * @see com.tbtosoft.smio.session.ISession#open()
+	 */
+	@Override
+	public boolean open() {
+		createThreadProc();
+		return true;
+	}
+	private void createThreadProc(){
+		if(null != thread){
+			closeThreadProc();
+		}		
+		threadRunable = true;
+		thread = new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				threadProc();
+			}
+		});
+		thread.setName("Session:" + this.name);
+		thread.start();
+	}
+	/* (non-Javadoc)
+	 * @see com.tbtosoft.smio.session.ISession#close()
+	 */
+	@Override
+	public void close() {
+		closeThreadProc();
+	}
+	private void closeThreadProc(){
+		threadRunable = false;
+		if(null != thread){
+			try {
+				thread.join(1000);
+			} catch (InterruptedException e) { 
+				e.printStackTrace();
+			}
+			if(thread.isAlive()){
+				thread.interrupt();
+			}
+			thread = null;
+		}
+	}
 	/**
 	 * @return the name
 	 */
@@ -63,17 +117,15 @@ abstract class BasicSession implements ISession {
 	}
 
 	/**
-	 * @return the config
+	 * @return the attachment
 	 */
-	public final IConfig getConfig() {
-		return config;
+	public final Object getAttachment() {
+		return attachment;
 	}
-
 	/**
-	 * @param config the config to set
+	 * @param attachment the attachment to set
 	 */
-	public final void setConfig(IConfig config) {
-		this.config = config;
-	}
-	
+	public final void setAttachment(Object attachment) {
+		this.attachment = attachment;
+	}	
 }
