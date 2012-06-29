@@ -14,7 +14,7 @@ import com.tbtosoft.smio.session.ISessionFactory;
  * @author chengchun
  *
  */
-class Bootstrap {
+public class Bootstrap {
 	private volatile ISessionFactory sessionFactory;
 	private volatile SmioPipelineFactory smioPipelineFactory;
 	protected Bootstrap(){
@@ -47,6 +47,7 @@ class Bootstrap {
                     "factory can't change once set.");
         }
 		this.sessionFactory = sessionFactory;
+		this.sessionFactory.setBootstrap(this);
 	}
 	/**
 	 * @return the smioPipelineFactory

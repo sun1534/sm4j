@@ -10,7 +10,9 @@ package com.tbtosoft.smio.session;
 
 import java.net.SocketAddress;
 
-import org.jboss.netty.bootstrap.Bootstrap;
+import com.tbtosoft.smio.Bootstrap;
+
+
 
 /**
  * @author chengchun

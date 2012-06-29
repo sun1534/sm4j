@@ -10,8 +10,8 @@ package com.tbtosoft.smio.session.impl;
 
 import java.net.SocketAddress;
 
-import org.jboss.netty.bootstrap.Bootstrap;
 
+import com.tbtosoft.smio.Bootstrap;
 import com.tbtosoft.smio.session.ISession;
 import com.tbtosoft.smio.session.ISessionFactory;
 
