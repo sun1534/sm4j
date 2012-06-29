@@ -36,7 +36,7 @@ public final class ClientSessionFactory extends BasicSessionFactory {
 			Object attachment) {	
 		ClientSession clientSession = new ClientSession();
 		
-		clientBootstrap.setPipelineFactory(bootstrap.getPipelineFactory());
+		clientBootstrap.setPipelineFactory(bootstrap.getSmioPipelineFactory());
 		
 		clientSession.setAttachment(attachment);
 		clientSession.setSocketAddress(socketAddress);
