@@ -8,13 +8,11 @@
  */
 package com.tbtosoft.smio;
 
-import com.tbtosoft.smio.session.ISession;
 
 /**
  * @author chengchun
  *
  */
 public interface IoHandler {
-	public void incoming(ISession session);
-	public void outgoing(ISession session);
+
 }

@@ -8,10 +8,7 @@
  */
 package com.tbtosoft.smio;
 
-import java.net.SocketAddress;
 
-import com.tbtosoft.smio.session.ISession;
-import com.tbtosoft.smio.session.ISessionFactory;
 
 /**
  * @author chengchun
@@ -21,10 +18,5 @@ public final class ServerBootstrap extends Bootstrap {
 	public ServerBootstrap(){
 		super();
 	}
-	public ServerBootstrap(ISessionFactory sessionFactory){
-		super(sessionFactory);
-	}
-	public ISession createSession(SocketAddress socketAddress, Object attachment){
-		return this.getSessionFactory().newSession(socketAddress, attachment);
-	}
+
 }
