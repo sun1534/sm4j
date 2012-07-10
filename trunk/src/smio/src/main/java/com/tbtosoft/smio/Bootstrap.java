@@ -8,47 +8,17 @@
  */
 package com.tbtosoft.smio;
 
-import com.tbtosoft.smio.session.ISessionFactory;
-
 /**
  * @author chengchun
  *
  */
 public class Bootstrap {
-	private volatile ISessionFactory sessionFactory;
+
 	private volatile SmioPipelineFactory smioPipelineFactory;
 	protected Bootstrap(){
 		
 	}
-	protected Bootstrap(ISessionFactory sessionFactory){
-		setSessionFactory(sessionFactory);
-	}
-	/**
-	 * @return the sessionFactory
-	 */
-	public final ISessionFactory getSessionFactory() {
-		ISessionFactory factory = this.sessionFactory;
-		if(null == factory){
-			throw new IllegalStateException(
-                    "factory is not set yet.");
-		}
-		return factory;
-	}
-
-	/**
-	 * @param sessionFactory the sessionFactory to set
-	 */
-	public final void setSessionFactory(ISessionFactory sessionFactory) {
-		if (sessionFactory == null) {
-            throw new NullPointerException("sessionFactory");
-        }
-        if (this.sessionFactory != null) {
-            throw new IllegalStateException(
-                    "factory can't change once set.");
-        }
-		this.sessionFactory = sessionFactory;
-		this.sessionFactory.setBootstrap(this);
-	}
+	
 	/**
 	 * @return the smioPipelineFactory
 	 */
