@@ -29,6 +29,7 @@ abstract class AbstractPackage implements IPackage{
 		mapMsgFmt.put(8, "UnicodeBigUnmarked");
 		mapMsgFmt.put(15, "gb2312");
 	}
+	
 	private static int globalSequenceNumber = 0;
 	private int length;
 	private final int commandId;
@@ -101,6 +102,13 @@ abstract class AbstractPackage implements IPackage{
 	protected byte read(ByteBuffer buffer){
 		return buffer.get();
 	}
+	protected int writeShort(ByteBuffer buffer, short value){
+		buffer.putShort(value);
+		return 2;
+	}
+	protected short readShort(ByteBuffer buffer){
+		return buffer.getShort();		
+	}
 	protected int write(ByteBuffer buffer, byte[] values){
 		buffer.put(values);
 		return values.length;
@@ -143,5 +151,83 @@ abstract class AbstractPackage implements IPackage{
 			pos++;
 		}
 		return new String(tmp, 0, pos, charset);
+	}
+	protected int writeTlv(ByteBuffer buffer, short tag, byte value){
+		int size = 0;
+		size+=writeShort(buffer, tag);
+		size+=writeShort(buffer, (short)1);
+		size+=write(buffer, value);		
+		return size;		
 	}	
+//	class Tlvs {
+//		class Tlv<T extends Object>{
+//			public Short tag;
+//			public Short len;
+//			public T value;
+//		}
+//		public final static short TPPID = 0X0001;
+//		public final static short TPUDHI  = 0X0002;
+//		public final static short LINKID = 0X0003;
+//		public final static short CHARGEUSERTYPE = 0X0004;
+//		public final static short CHARGETERMTYPE = 0X0005;
+//		public final static short CHARGETERMPSEUDO = 0X0006;
+//		public final static short DESTTERMTYPE = 0X0007;
+//		public final static short DESTTERMPSEUDO = 0X0008;
+//		public final static short PKTOTAL = 0X0009;
+//		public final static short PKNUMBER = 0X000A;
+//		public final static short SUBMITMSGTYPE = 0X000B;
+//		public final static short SPDEALRESLT = 0X000C;
+//		public final static short SRCTERMTYPE = 0X000D;
+//		public final static short SRCTERMPSEUDO = 0X000E;
+//		public final static short NODESCOUNT = 0X000F;
+//		public final static short MSGSRC = 0X0010;
+//		public final static short SRCTYPE = 0X0011;
+//		public final static short MSERVICEID = 0X0012;
+//		private Map<Short, Tlv<Object>> tlvs = new HashMap<Short, Tlv<Object>>();
+//		
+//		@SuppressWarnings("unchecked")
+//		public <T> T getValue(short tag){			
+//			Tlv<Object> tlv = tlvs.get(tag);
+//			if(null != tlv){
+//				return (T)(tlv.value);
+//			}
+//			return null;
+//		}
+//		@SuppressWarnings("unchecked")
+//		public <T> void setValue(short tag, T value){
+//			Object obj = tlvs.get(tag);
+//			
+//		}
+//		public int toBuffer(ByteBuffer buffer){
+//			
+//			return 0;
+//		}
+//		public void loadBuffer(ByteBuffer buffer){
+//			while(buffer.remaining()>=4){
+//				short tag = buffer.getShort();
+//				short len = buffer.getShort();
+//				switch(tag){
+//					case TPPID:
+//						
+//						break;
+//					default:
+//						;
+//				}
+//			}
+//		}
+//		protected void addTlv(Short tag, Short len, byte[] buffer){
+//			
+//		}
+//		protected void addTppid(Byte value){
+//			this.addTlv(TPPID, (short)1, value);			
+//		}
+//		@SuppressWarnings("unchecked")
+//		private <E extends Object> void addTlv(Short tag, Short len, E value){
+//			Tlv<E> tlv = new Tlv<E>();
+//			tlv.tag = tag;
+//			tlv.len = len;
+//			tlv.value = value;
+//			tlvs.put(tag, (Tlv<Object>) tlv);
+//		}
+//	}
 }
