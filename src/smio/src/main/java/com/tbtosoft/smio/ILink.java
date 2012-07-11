@@ -8,12 +8,13 @@
  */
 package com.tbtosoft.smio;
 
-import org.jboss.netty.channel.SimpleChannelHandler;
-
 /**
  * @author chengchun
  *
  */
-public abstract class SimpleSmioHandler extends SimpleChannelHandler{
-
+public interface ILink {
+	public boolean open();
+	public void close();
+	public boolean write(Object object);
+	public boolean isConnected();
 }
