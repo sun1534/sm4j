@@ -8,12 +8,10 @@
  */
 package com.tbtosoft.smio;
 
-import org.jboss.netty.channel.SimpleChannelHandler;
-
 /**
  * @author chengchun
  *
  */
-public abstract class SimpleSmioHandler extends SimpleChannelHandler{
-
+public interface IOFactory {
+	
 }

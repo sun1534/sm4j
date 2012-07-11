@@ -8,11 +8,14 @@
  */
 package com.tbtosoft.smio;
 
+import org.jboss.netty.channel.Channel;
+
 
 /**
  * @author chengchun
  *
  */
 public interface IoHandler {
-
+	public void receive(Channel channel, Object obj);
+	public boolean isClientToServerMsg(Object obj);
 }
