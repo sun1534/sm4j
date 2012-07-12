@@ -6,14 +6,18 @@
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  */
-package com.tbtosoft.smio;
+package com.tbtosoft.smio.handlers;
 
-import org.jboss.netty.channel.SimpleChannelHandler;
+import org.jboss.netty.channel.ChannelHandlerContext;
+
+import com.tbtosoft.sgip.BindReqPkg;
+import com.tbtosoft.sgip.BindRspPkg;
 
 /**
  * @author chengchun
  *
  */
-public abstract class SimpleSmioHandler extends SimpleChannelHandler{
-	
+interface ISgipHandler {
+	public void received(ChannelHandlerContext ctx, BindReqPkg bindReqPkg);
+	public void received(ChannelHandlerContext ctx, BindRspPkg bindRspPkg);
 }
