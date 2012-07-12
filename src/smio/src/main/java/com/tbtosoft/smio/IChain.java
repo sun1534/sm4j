@@ -8,12 +8,14 @@
  */
 package com.tbtosoft.smio;
 
-import org.jboss.netty.channel.SimpleChannelHandler;
 
 /**
  * @author chengchun
  *
  */
-public abstract class SimpleSmioHandler extends SimpleChannelHandler{
-	
+public interface IChain {	
+	public void addHandler(String name, ISmsHandler smsHandler);
+	public boolean write(Object object);
+	public boolean open();
+	public void close();
 }
