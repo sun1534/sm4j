@@ -9,20 +9,21 @@
 package com.tbtosoft.smsp.cmpp;
 
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelHandlerContext;
 
-import com.tbtosoft.cmpp.ActiveTestReqPkg;
-import com.tbtosoft.cmpp.DeliverReqPkg;
-import com.tbtosoft.cmpp.DeliverRspPkg;
-import com.tbtosoft.cmpp.SubmitReqPkg;
-import com.tbtosoft.smio.ILink;
-import com.tbtosoft.smio.IoHandler;
-import com.tbtosoft.smio.LongLink;
-import com.tbtosoft.smio.ShortLink;
+import com.tbtosoft.cmpp.ConnectReqPkg;
+import com.tbtosoft.cmpp.ConnectRspPkg;
+import com.tbtosoft.cmpp.IPackage;
+import com.tbtosoft.cmpp.Packages;
+import com.tbtosoft.cmpp.exception.CmppException;
+import com.tbtosoft.smio.IChain;
+import com.tbtosoft.smio.ICoder;
+import com.tbtosoft.smio.LongChain;
+import com.tbtosoft.smio.ShortChain;
+import com.tbtosoft.smio.handlers.SimpleCmppHandler;
 import com.tbtosoft.smsp.AbstractSP;
 
 /**
@@ -30,120 +31,67 @@ import com.tbtosoft.smsp.AbstractSP;
  *
  */
 public final class ServiceProvider extends AbstractSP{
-	private InnerLink link;
+	private IChain chain;
 	public ServiceProvider(SocketAddress serverAddress){
-		this.link = new InnerLink(serverAddress);
+		this.chain = new LongChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new InnerCoder());
+		this.chain.addHandler("INNER-SMS-IO-HANDLER", new InnerSmsIoHandler());
 	}
 	public ServiceProvider(SocketAddress serverAddress, SocketAddress localAddress){
-		this.link = new InnerLink(serverAddress, localAddress);
+		this.chain = new ShortChain(serverAddress, localAddress);
 	}
-	private void receiveImpl(Channel channel, Object obj){
-		if(obj instanceof DeliverReqPkg){
-			receiveDeliverReq(channel, (DeliverReqPkg)obj);
-		}
-	}
-	private void receiveDeliverReq(Channel channel, DeliverReqPkg deliverReqPkg){
-		DeliverRspPkg deliverRspPkg = new DeliverRspPkg(deliverReqPkg.getMsgId());
-		deliverRspPkg.setResult((byte)0x00);
-		deliverRspPkg.setSequence(deliverReqPkg.getSequence());
-		channel.write(deliverRspPkg);
-		
-	}
-	
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.smsp.ISP#send(java.lang.String, java.util.Collection)
 	 */
 	@Override
 	public boolean send(String message, Collection<String> terminals) {
-		SubmitReqPkg submitReqPkg = new SubmitReqPkg();
-		submitReqPkg.setDestTerminalId(terminals);		
-		return link.write(submitReqPkg);
+//		SubmitReqPkg submitReqPkg = new SubmitReqPkg();
+//		submitReqPkg.setDestTerminalId(terminals);		
+//		return link.write(submitReqPkg);
+		return true;
 	}
-	private boolean isClientToServerMsgImpl(Object obj){
-		return false;
+	
+	class InnerSmsIoHandler extends SimpleCmppHandler{
+
+		@Override
+		public void received(ChannelHandlerContext ctx,
+				ConnectReqPkg connectReqPkg) {
+			
+		}
+
+		@Override
+		public void received(ChannelHandlerContext ctx,
+				ConnectRspPkg connectRspPkg) {
+			
+		}		
 	}
-	private Object getActiveTestRequestPackage(){
-		return new ActiveTestReqPkg();
-	}
-	class InnerLink implements ILink{
-		private LongLink longLink;
-		private ShortLink shortLink;
-		private Timer longLinkTimer;
-		private volatile boolean enableTimer;
-		public InnerLink(SocketAddress serverAddress) {
-			if (null != shortLink) {
-				shortLink.close();
-				shortLink = null;
-			}
-			longLink = new LongLink(serverAddress);
-			enableTimer = true;
-			longLinkTimer = new Timer("LONG-TIMER");	
-			processActiveTest();
-		}
-		private void processActiveTest(){	
-			if(!enableTimer){
-				return;
-			}
-			doActiveTest();
-			longLinkTimer.schedule(new TimerTask() {				
-				@Override
-				public void run() {
-					processActiveTest();
-				}
-			}, 0, 30000);
-		}
-		private void doActiveTest(){
-			if(null != longLink && longLink.isConnected()){
-				longLink.write(getActiveTestRequestPackage());
-			}
-		}
-		public InnerLink(SocketAddress serverAddress, SocketAddress localAddress) {
-			if (null != longLink) {
-				longLink.close();
-				longLink = null;
-			}
-			shortLink = new ShortLink(serverAddress);
-		}
+	class InnerCoder implements ICoder<IPackage>{
 
-		public ILink getActiveLink() {
-			return null == longLink ? shortLink : longLink;
+		@Override
+		public IPackage decode(ByteBuffer buffer) {
+			try {
+				return Packages.parse(buffer);
+			} catch (CmppException e) {				
+				e.printStackTrace();
+			}
+			return null;
 		}
 
 		@Override
-		public boolean open() {			
-			return getActiveLink().open();
-		}
-
-		@Override
-		public void close() {
-			this.enableTimer = false;
-			if(null != longLinkTimer){				
-				longLinkTimer.cancel();				
+		public ByteBuffer encode(IPackage t) {
+			ByteBuffer buffer = ByteBuffer.allocate(1024);
+			try {
+				t.toBuffer(buffer);
+			} catch (CmppException e) {				
+				e.printStackTrace();
 			}
-			getActiveLink().close();
+			return buffer;
 		}
 
 		@Override
-		public boolean write(Object object) {			
-			return getActiveLink().write(object);
-		}
-
-		@Override
-		public boolean isConnected() {			
-			return getActiveLink().isConnected();
+		public int getMinBytes() {			
+			return 4;
 		}
 		
 	}
-	class InnerIOHanlder implements IoHandler{
-
-		@Override
-		public void receive(Channel channel, Object obj) {
-			receiveImpl(channel, obj);
-		}
-
-		@Override
-		public boolean isClientToServerMsg(Object obj) {			
-			return isClientToServerMsgImpl(obj);
-		}		
-	}	
+	
 }
