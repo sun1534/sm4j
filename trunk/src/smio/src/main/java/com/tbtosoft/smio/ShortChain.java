@@ -13,7 +13,10 @@ import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ServerChannelFactory;
@@ -77,6 +80,7 @@ public class ShortChain extends BasicChain {
 		private ClientBootstrap clientBootstrap;
 		private ChannelFactory clientChannelFactory;
 		private final SocketAddress serverAddress;
+		private Channel channel;
 		public Client(SocketAddress serverAddress) {
 			this.serverAddress = serverAddress;
 			this.clientChannelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
@@ -91,14 +95,41 @@ public class ShortChain extends BasicChain {
 				}
 			});
 		}
-		
+		private void connect(){
+			if(null != this.channel && this.channel.isConnected()){
+				this.channel.disconnect();
+				this.channel = null;
+			}
+			ChannelFuture channelFuture = this.clientBootstrap.connect(this.serverAddress);
+			channelFuture.awaitUninterruptibly();
+			if(!channelFuture.isSuccess()){
+				
+				return ;
+			}
+			this.channel = channelFuture.getChannel();
+			this.channel.getCloseFuture().addListener(new ChannelFutureListener() {
+				
+				@Override
+				public void operationComplete(ChannelFuture future) throws Exception {				
+					Client.this.channel = null;
+				}
+			});		
+		}
+		private boolean isConnected(){
+			if(null != this.channel){
+				return this.channel.isConnected();
+			}
+			return false;
+		}
 		@Override
 		public void addHandler(String name, ISmsHandler smsHandler) {
 			
 		}
 		@Override
 		public boolean write(Object object) {
-			
+			if(!isConnected()){
+				connect();
+			}
 			return false;
 		}
 		@Override
