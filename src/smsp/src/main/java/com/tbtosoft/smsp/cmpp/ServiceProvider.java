@@ -37,7 +37,7 @@ public final class ServiceProvider extends AbstractSP{
 		this.chain.addHandler("INNER-SMS-IO-HANDLER", new InnerSmsIoHandler());
 	}
 	public ServiceProvider(SocketAddress serverAddress, SocketAddress localAddress){
-		this.chain = new ShortChain(serverAddress, localAddress);
+		this.chain = new ShortChain<IPackage, ICoder<IPackage>>(serverAddress, localAddress, 30000, new InnerCoder());
 	}
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.smsp.ISP#send(java.lang.String, java.util.Collection)
