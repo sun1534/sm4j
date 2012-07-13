@@ -21,6 +21,10 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.handler.timeout.IdleState;
+import org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler;
+import org.jboss.netty.handler.timeout.IdleStateEvent;
+import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timeout;
 import org.jboss.netty.util.Timer;
@@ -38,7 +42,7 @@ public class LongChain<E, T extends ICoder<E>> extends BasicChain {
 	private ChannelFactory clientChannelFactory;
 	private Timer timer = new HashedWheelTimer();
 	private Timeout timeout;
-	private Channel channel;
+	private volatile Channel channel;
 	public LongChain(SocketAddress socketAddress, long activeTimeMillis, T coder){
 		this.coder = coder;
 		this.activeTimeMillis = activeTimeMillis;
@@ -51,8 +55,21 @@ public class LongChain<E, T extends ICoder<E>> extends BasicChain {
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline channelPipeline = getChannelPipeline();
-				channelPipeline.addFirst("ACTIVE-STATE-HANDLER", new ActiveStateHandler(new HashedWheelTimer(), LongChain.this.activeTimeMillis));
-				channelPipeline.addFirst("ACTIVE-STATE-AWARE", new InnerActiveStateAwareHandler());				
+				channelPipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(new HashedWheelTimer(), 0, 0, LongChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
+				channelPipeline.addLast("", new IdleStateAwareChannelHandler(){
+
+					/* (non-Javadoc)
+					 * @see org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler#channelIdle(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.handler.timeout.IdleStateEvent)
+					 */
+					@Override
+					public void channelIdle(ChannelHandlerContext ctx,
+							IdleStateEvent e) throws Exception {
+						if(IdleState.ALL_IDLE == e.getState()){
+							ctx.sendUpstream(new ActiveEvent(e.getChannel(), e.getLastActivityTimeMillis()));
+						}
+						super.channelIdle(ctx, e);
+					}						
+				});				
 				channelPipeline.addLast("ENCODER", new Encoder<E, T>(LongChain.this.coder));
 				channelPipeline.addLast("DECODER", new Decoder<E, T>(LongChain.this.coder));
 				return channelPipeline;
@@ -89,8 +106,7 @@ public class LongChain<E, T extends ICoder<E>> extends BasicChain {
 	}
 	private void connect(){
 		if(null != this.channel && this.channel.isConnected()){
-			this.channel.disconnect();
-			this.channel = null;
+			return;
 		}
 		ChannelFuture channelFuture = this.clientBootstrap.connect(this.serverAddress);
 		channelFuture.awaitUninterruptibly();
@@ -128,17 +144,5 @@ public class LongChain<E, T extends ICoder<E>> extends BasicChain {
 		if(null != clientChannelFactory){
 			clientChannelFactory.releaseExternalResources();
 		}
-	}
-
-	class InnerActiveStateAwareHandler extends ActiveStateAwareChannelHandler{
-
-		/* (non-Javadoc)
-		 * @see com.tbtosoft.smio.ActiveStateAwareChannelHandler#channelActive(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.smio.ActiveMessageEvent)
-		 */
-		@Override
-		public void channelActive(ChannelHandlerContext ctx,
-				ActiveMessageEvent e) throws Exception {
-			
-		}		
-	}
+	}	
 }

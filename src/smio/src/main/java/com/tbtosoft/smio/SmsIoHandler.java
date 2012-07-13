@@ -11,6 +11,7 @@ package com.tbtosoft.smio;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
@@ -20,7 +21,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
  * @author chengchun
  *
  */
-public abstract class SmsIoHandler<T> extends SimpleChannelUpstreamHandler implements ISmsHandler{
+public abstract class SmsIoHandler<T> implements ISmsHandler{
 	private Type actualType;
 	private final InnerHandler handler = new InnerHandler();
 	protected SmsIoHandler(){
@@ -36,7 +37,23 @@ public abstract class SmsIoHandler<T> extends SimpleChannelUpstreamHandler imple
 	}
 
 	protected abstract void receiveImpl(ChannelHandlerContext ctx, T t);
+	protected void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e){
+		
+	}
 	class InnerHandler extends SimpleChannelUpstreamHandler{
+
+		/* (non-Javadoc)
+		 * @see org.jboss.netty.channel.SimpleChannelUpstreamHandler#handleUpstream(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelEvent)
+		 */
+		@Override
+		public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
+				throws Exception {
+			if(e instanceof ActiveEvent){
+				onChannelIdle(ctx, (ActiveEvent)e);
+			} else {
+				super.handleUpstream(ctx, e);
+			}
+		}
 
 		/* (non-Javadoc)
 		 * @see org.jboss.netty.channel.SimpleChannelUpstreamHandler#messageReceived(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.MessageEvent)
