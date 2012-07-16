@@ -6,7 +6,7 @@
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  */
-package com.tbtosoft.smio;
+package com.tbtosoft.smio.handlers;
 
 import static org.jboss.netty.channel.Channels.succeededFuture;
 
@@ -18,22 +18,16 @@ import org.jboss.netty.channel.ChannelFuture;
  * @author chengchun
  *
  */
-public class ActiveEvent implements ChannelEvent {
+public class KeepAliveEvent implements ChannelEvent {
 	private final Channel channel;
-    private final long lastActivityTimeMillis;
-    public ActiveEvent(
-            Channel channel, long lastActivityTimeMillis) {
-        if (channel == null) {
-            throw new NullPointerException("channel");
-        }        
-        this.channel = channel;        
-        this.lastActivityTimeMillis = lastActivityTimeMillis;
-    }
+	public KeepAliveEvent(Channel channel){
+		this.channel = channel;
+	}
 	/* (non-Javadoc)
 	 * @see org.jboss.netty.channel.ChannelEvent#getChannel()
 	 */
 	@Override
-	public Channel getChannel() {
+	public Channel getChannel() {		
 		return this.channel;
 	}
 
@@ -44,10 +38,5 @@ public class ActiveEvent implements ChannelEvent {
 	public ChannelFuture getFuture() {
 		return succeededFuture(getChannel());
 	}
-	/**
-	 * @return the lastActivityTimeMillis
-	 */
-	public final long getLastActivityTimeMillis() {
-		return lastActivityTimeMillis;
-	}	
+
 }

@@ -30,6 +30,8 @@ import org.jboss.netty.util.Timeout;
 import org.jboss.netty.util.Timer;
 import org.jboss.netty.util.TimerTask;
 
+import com.tbtosoft.smio.handlers.ActiveEvent;
+
 /**
  * @author chengchun
  *
