@@ -9,20 +9,21 @@
 package com.tbtosoft.smsp.cmpp;
 
 import java.net.SocketAddress;
-import java.nio.ByteBuffer;
 import java.util.Collection;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
 
 import com.tbtosoft.cmpp.ConnectReqPkg;
 import com.tbtosoft.cmpp.ConnectRspPkg;
 import com.tbtosoft.cmpp.IPackage;
-import com.tbtosoft.cmpp.Packages;
-import com.tbtosoft.cmpp.exception.CmppException;
 import com.tbtosoft.smio.IChain;
 import com.tbtosoft.smio.ICoder;
 import com.tbtosoft.smio.LongChain;
 import com.tbtosoft.smio.ShortChain;
+import com.tbtosoft.smio.codec.CmppCoder;
+import com.tbtosoft.smio.handlers.ActiveEvent;
+import com.tbtosoft.smio.handlers.KeepAliveEvent;
 import com.tbtosoft.smio.handlers.SimpleCmppHandler;
 import com.tbtosoft.smsp.AbstractSP;
 
@@ -33,11 +34,11 @@ import com.tbtosoft.smsp.AbstractSP;
 public final class ServiceProvider extends AbstractSP{
 	private IChain chain;
 	public ServiceProvider(SocketAddress serverAddress){
-		this.chain = new LongChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new InnerCoder());
+		this.chain = new LongChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new CmppCoder());
 		this.chain.addHandler("INNER-SMS-IO-HANDLER", new InnerSmsIoHandler());
 	}
 	public ServiceProvider(SocketAddress serverAddress, SocketAddress localAddress){
-		this.chain = new ShortChain<IPackage, ICoder<IPackage>>(serverAddress, localAddress, 30000, new InnerCoder());
+		this.chain = new ShortChain<IPackage, ICoder<IPackage>>(serverAddress, localAddress, 30000, new CmppCoder());
 	}
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.smsp.ISP#send(java.lang.String, java.util.Collection)
@@ -52,6 +53,41 @@ public final class ServiceProvider extends AbstractSP{
 	
 	class InnerSmsIoHandler extends SimpleCmppHandler{
 
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelIdle(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.smio.handlers.ActiveEvent)
+		 */
+		@Override
+		protected void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelKeepAlive(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.smio.handlers.KeepAliveEvent)
+		 */
+		@Override
+		protected void onChannelKeepAlive(ChannelHandlerContext ctx,
+				KeepAliveEvent e) {
+
+		}
+
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelConnected(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
+		 */
+		@Override
+		protected void onChannelConnected(ChannelHandlerContext ctx,
+				ChannelStateEvent e) {
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelDisconnected(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
+		 */
+		@Override
+		protected void onChannelDisconnected(ChannelHandlerContext ctx,
+				ChannelStateEvent e) {
+			
+		}
+
 		@Override
 		public void received(ChannelHandlerContext ctx,
 				ConnectReqPkg connectReqPkg) {
@@ -63,35 +99,5 @@ public final class ServiceProvider extends AbstractSP{
 				ConnectRspPkg connectRspPkg) {
 			
 		}		
-	}
-	class InnerCoder implements ICoder<IPackage>{
-
-		@Override
-		public IPackage decode(ByteBuffer buffer) {
-			try {
-				return Packages.parse(buffer);
-			} catch (CmppException e) {				
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-		@Override
-		public ByteBuffer encode(IPackage t) {
-			ByteBuffer buffer = ByteBuffer.allocate(1024);
-			try {
-				t.toBuffer(buffer);
-			} catch (CmppException e) {				
-				e.printStackTrace();
-			}
-			return buffer;
-		}
-
-		@Override
-		public int getMinBytes() {			
-			return 4;
-		}
-		
-	}
-	
+	}		
 }
