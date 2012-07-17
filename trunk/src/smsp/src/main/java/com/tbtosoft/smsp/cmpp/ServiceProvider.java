@@ -19,7 +19,7 @@ import com.tbtosoft.cmpp.ConnectRspPkg;
 import com.tbtosoft.cmpp.IPackage;
 import com.tbtosoft.smio.IChain;
 import com.tbtosoft.smio.ICoder;
-import com.tbtosoft.smio.LongChain;
+import com.tbtosoft.smio.LongClientChain;
 import com.tbtosoft.smio.ShortChain;
 import com.tbtosoft.smio.codec.CmppCoder;
 import com.tbtosoft.smio.handlers.ActiveEvent;
@@ -34,7 +34,7 @@ import com.tbtosoft.smsp.AbstractSP;
 public final class ServiceProvider extends AbstractSP{
 	private IChain chain;
 	public ServiceProvider(SocketAddress serverAddress){
-		this.chain = new LongChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new CmppCoder());
+		this.chain = new LongClientChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new CmppCoder());
 		this.chain.addHandler("INNER-SMS-IO-HANDLER", new InnerSmsIoHandler());
 	}
 	public ServiceProvider(SocketAddress serverAddress, SocketAddress localAddress){
