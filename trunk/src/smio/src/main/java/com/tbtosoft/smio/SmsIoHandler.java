@@ -8,12 +8,10 @@
  */
 package com.tbtosoft.smio;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
@@ -25,10 +23,8 @@ import com.tbtosoft.smio.handlers.KeepAliveEvent;
  *
  */
 public abstract class SmsIoHandler<T> implements ISmsHandler{
-	private Type actualType;
 	private final InnerHandler handler = new InnerHandler();
 	protected SmsIoHandler(){
-		actualType = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 	}
 	
 	/* (non-Javadoc)
@@ -44,6 +40,12 @@ public abstract class SmsIoHandler<T> implements ISmsHandler{
 		
 	}
 	protected void onChannelKeepAlive(ChannelHandlerContext ctx, KeepAliveEvent e){
+		
+	}
+	protected void onChannelConnected(ChannelHandlerContext ctx, ChannelStateEvent e){
+		
+	}
+	protected void onChannelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e){
 		
 	}
 	class InnerHandler extends SimpleChannelUpstreamHandler{
@@ -70,11 +72,25 @@ public abstract class SmsIoHandler<T> implements ISmsHandler{
 		@Override
 		public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
 				throws Exception {
-			if(actualType.equals(e.getMessage().getClass())){
-				receiveImpl(ctx, ((T)e.getMessage()));
-			} else {
-				super.messageReceived(ctx, e);
-			}
+			receiveImpl(ctx, ((T)e.getMessage()));
+		}
+
+		/* (non-Javadoc)
+		 * @see org.jboss.netty.channel.SimpleChannelUpstreamHandler#channelConnected(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
+		 */
+		@Override
+		public void channelConnected(ChannelHandlerContext ctx,
+				ChannelStateEvent e) throws Exception {
+			onChannelConnected(ctx, e);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.jboss.netty.channel.SimpleChannelUpstreamHandler#channelDisconnected(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
+		 */
+		@Override
+		public void channelDisconnected(ChannelHandlerContext ctx,
+				ChannelStateEvent e) throws Exception {
+			onChannelDisconnected(ctx, e);
 		}		
 	}
 }
