@@ -8,9 +8,6 @@
  */
 package com.tbtosoft.smio;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
@@ -20,11 +17,10 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
  *
  */
 public class Encoder<E, T extends ICoder<E>> extends OneToOneEncoder {
-	private Type msgType;
+	
 	private T coder;
 	public Encoder(T coder){
-		this.coder = coder;
-		this.msgType = ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+		this.coder = coder;		
 	}
 	/* (non-Javadoc)
 	 * @see org.jboss.netty.handler.codec.oneone.OneToOneEncoder#encode(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.Channel, java.lang.Object)
@@ -33,10 +29,7 @@ public class Encoder<E, T extends ICoder<E>> extends OneToOneEncoder {
 	@Override
 	protected Object encode(ChannelHandlerContext ctx, Channel channel,
 			Object msg) throws Exception {
-		if(null != this.msgType && this.msgType.equals(msg.getClass())){
-			coder.encode((E)msg);
-		}
-		return null;
+		return coder.encode((E)msg);
 	}
 
 }
