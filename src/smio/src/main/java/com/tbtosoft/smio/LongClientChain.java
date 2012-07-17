@@ -37,7 +37,7 @@ import com.tbtosoft.smio.handlers.ActiveEvent;
  * @author chengchun
  *
  */
-public class LongChain<E, T extends ICoder<E>> extends BasicChain {
+public class LongClientChain<E, T extends ICoder<E>> extends BasicChain {
 	private final T coder;
 	private final long activeTimeMillis;
 	private SocketAddress serverAddress;
@@ -46,7 +46,7 @@ public class LongChain<E, T extends ICoder<E>> extends BasicChain {
 	private Timer timer = new HashedWheelTimer();
 	private Timeout timeout;
 	private volatile Channel channel;
-	public LongChain(SocketAddress socketAddress, long activeTimeMillis, T coder){
+	public LongClientChain(SocketAddress socketAddress, long activeTimeMillis, T coder){
 		this.coder = coder;
 		this.activeTimeMillis = activeTimeMillis;
 		this.serverAddress = socketAddress;
@@ -58,7 +58,7 @@ public class LongChain<E, T extends ICoder<E>> extends BasicChain {
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline channelPipeline = getChannelPipeline();
-				channelPipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(new HashedWheelTimer(), 0, 0, LongChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
+				channelPipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(new HashedWheelTimer(), 0, 0, LongClientChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
 				channelPipeline.addLast("", new IdleStateAwareChannelHandler(){
 
 					/* (non-Javadoc)
@@ -73,8 +73,8 @@ public class LongChain<E, T extends ICoder<E>> extends BasicChain {
 						super.channelIdle(ctx, e);
 					}						
 				});				
-				channelPipeline.addLast("ENCODER", new Encoder<E, T>(LongChain.this.coder));
-				channelPipeline.addLast("DECODER", new Decoder<E, T>(LongChain.this.coder));
+				channelPipeline.addLast("ENCODER", new Encoder<E, T>(LongClientChain.this.coder));
+				channelPipeline.addLast("DECODER", new Decoder<E, T>(LongClientChain.this.coder));
 				return channelPipeline;
 			}
 		});
