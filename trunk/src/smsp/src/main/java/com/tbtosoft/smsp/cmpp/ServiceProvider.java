@@ -13,6 +13,8 @@ import java.util.Collection;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.logging.InternalLogger;
+import org.jboss.netty.logging.InternalLoggerFactory;
 
 import com.tbtosoft.cmpp.ConnectReqPkg;
 import com.tbtosoft.cmpp.ConnectRspPkg;
@@ -32,6 +34,8 @@ import com.tbtosoft.smsp.AbstractSP;
  *
  */
 public final class ServiceProvider extends AbstractSP{
+	private static final InternalLogger logger =
+	        InternalLoggerFactory.getInstance(ServiceProvider.class);
 	private IChain chain;
 	public ServiceProvider(SocketAddress serverAddress){
 		this.chain = new LongClientChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new CmppCoder());
@@ -39,7 +43,17 @@ public final class ServiceProvider extends AbstractSP{
 	}
 	public ServiceProvider(SocketAddress serverAddress, SocketAddress localAddress){
 		this.chain = new ShortChain<IPackage, ICoder<IPackage>>(serverAddress, localAddress, 30000, new CmppCoder());
+		this.chain.addHandler("INNER-SMS-IO-HANDLER", new InnerSmsIoHandler());
 	}
+
+	@Override
+	public boolean start() {		
+		return this.chain.open();
+	}
+	@Override
+	public void stop() {
+		this.chain.close();
+	}	
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.smsp.ISP#send(java.lang.String, java.util.Collection)
 	 */
@@ -50,7 +64,11 @@ public final class ServiceProvider extends AbstractSP{
 //		return link.write(submitReqPkg);
 		return true;
 	}
-	
+	private void login(){
+		ConnectReqPkg connectReqPkg = new ConnectReqPkg("1234", "1234");		
+		connectReqPkg.setVersion((byte)0x20);
+		this.chain.write(connectReqPkg);
+	}
 	class InnerSmsIoHandler extends SimpleCmppHandler{
 
 		/* (non-Javadoc)
@@ -58,7 +76,7 @@ public final class ServiceProvider extends AbstractSP{
 		 */
 		@Override
 		protected void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
-			
+			logger.info(ctx.getChannel()+" idle.");
 		}
 
 		/* (non-Javadoc)
@@ -67,7 +85,7 @@ public final class ServiceProvider extends AbstractSP{
 		@Override
 		protected void onChannelKeepAlive(ChannelHandlerContext ctx,
 				KeepAliveEvent e) {
-
+			ServiceProvider.this.chain.open();
 		}
 
 		/* (non-Javadoc)
@@ -76,7 +94,8 @@ public final class ServiceProvider extends AbstractSP{
 		@Override
 		protected void onChannelConnected(ChannelHandlerContext ctx,
 				ChannelStateEvent e) {
-			
+			logger.info(ctx.getChannel()+" connected.");
+			login();
 		}
 
 		/* (non-Javadoc)
@@ -85,19 +104,20 @@ public final class ServiceProvider extends AbstractSP{
 		@Override
 		protected void onChannelDisconnected(ChannelHandlerContext ctx,
 				ChannelStateEvent e) {
-			
+			logger.info(ctx.getChannel()+" disconnected.");
 		}
 
 		@Override
 		public void received(ChannelHandlerContext ctx,
 				ConnectReqPkg connectReqPkg) {
-			
+			logger.info("");
 		}
 
 		@Override
 		public void received(ChannelHandlerContext ctx,
 				ConnectRspPkg connectRspPkg) {
-			
+			logger.info(connectRspPkg.toString());
 		}		
-	}		
+	}
+	
 }
