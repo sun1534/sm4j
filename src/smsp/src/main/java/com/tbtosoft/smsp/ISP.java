@@ -15,6 +15,8 @@ import java.util.Collection;
  *
  */
 public interface ISP {
+	public boolean start();
 	public boolean send(String message, Collection<String> terminals);
 	public void setListener(ISPListener listener);
+	public void stop();
 }
