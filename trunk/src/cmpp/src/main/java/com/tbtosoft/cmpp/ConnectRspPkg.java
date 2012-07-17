@@ -10,6 +10,7 @@ package com.tbtosoft.cmpp;
 
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import com.tbtosoft.cmpp.exception.CmppException;
 
@@ -126,4 +127,14 @@ public final class ConnectRspPkg extends AbstractPackage{
 							+ authenticatorSource + " Password:" + this.password, e);
 		}
 	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ConnectRspPkg [status=" + status + ", authenticatorISMG="
+				+ Arrays.toString(authenticatorISMG) + ", version=" + version
+				+ ", password=" + password + ", authenticatorSource="
+				+ Arrays.toString(authenticatorSource) + "]";
+	}	
 }
