@@ -11,6 +11,7 @@ package com.tbtosoft.cmpp;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import com.tbtosoft.cmpp.exception.CmppException;
@@ -53,9 +54,10 @@ public final class ConnectReqPkg extends AbstractPackage {
 	}
 	@Override
 	protected int onToBuffer(ByteBuffer buffer) throws CmppException {
-		this.timestamp = createTimestamp();		
+		String strTimestamp = createTimestamp();
+		this.timestamp = Integer.parseInt(strTimestamp);
 		this.authenticatorSource = createAuthenticatorSource(
-				this.sourceAddress, this.password, this.timestamp);
+				this.sourceAddress, this.password, strTimestamp);
 		
 		int len = 0;
 		len+=writeString(buffer, this.sourceAddress, 6);		
@@ -131,16 +133,18 @@ public final class ConnectReqPkg extends AbstractPackage {
 	}
 	
 	public byte[] createAuthenticatorSource(String sourceAddr, String password,
-			Integer timestamp) throws CmppException {
+			String timestamp) throws CmppException {
 		try {
 			ByteBuffer buffer = ByteBuffer.allocate(256);
-			writeString(buffer, sourceAddr, 6);
+			int size = 0;
+			size+=writeString(buffer, sourceAddr, sourceAddr.length());			
 			buffer.position(buffer.position() + 9);
-			writeString(buffer, password, password.length());
-			writeString(buffer, timestamp.toString(), 10);
+			size+=9;
+			size+=writeString(buffer, password, password.length());
+			size+=writeString(buffer, timestamp, 10);
 			java.security.MessageDigest md5 = java.security.MessageDigest
 					.getInstance("MD5");
-			md5.update(buffer.array());
+			md5.update(buffer.array(), 0, size);
 			return md5.digest();
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
@@ -151,7 +155,17 @@ public final class ConnectReqPkg extends AbstractPackage {
 		}
 	}
 	
-	private Integer createTimestamp(){
-		return Integer.parseInt(new SimpleDateFormat("MMddHHmmss").format(new Date()));
+	private String createTimestamp(){
+		return new SimpleDateFormat("MMddHHmmss").format(new Date());
 	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ConnectReqPkg [sourceAddress=" + sourceAddress
+				+ ", authenticatorSource="
+				+ Arrays.toString(authenticatorSource) + ", version=" + version
+				+ ", timestamp=" + timestamp + ", password=" + password + "]";
+	}	
 }

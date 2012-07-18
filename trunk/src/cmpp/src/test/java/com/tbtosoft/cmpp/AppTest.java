@@ -1,5 +1,7 @@
 package com.tbtosoft.cmpp;
 
+import com.tbtosoft.cmpp.exception.CmppException;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -30,9 +32,13 @@ public class AppTest
 
     /**
      * Rigourous Test :-)
+     * @throws CmppException 
      */
-    public void testApp()
+    public void testApp() throws CmppException
     {
-        assertTrue( true );        
+        assertTrue( true );  
+        ConnectReqPkg connectReqPkg = new ConnectReqPkg();
+        byte[] reulst =connectReqPkg.createAuthenticatorSource("1234", "1234", "0718103806");
+        System.out.println(ConnectReqPkg.byteToHexString(reulst));
     }
 }
