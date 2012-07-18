@@ -23,6 +23,8 @@ import com.tbtosoft.cmpp.ConnectRspPkg;
 import com.tbtosoft.cmpp.DeliverReqPkg;
 import com.tbtosoft.cmpp.IPackage;
 import com.tbtosoft.cmpp.SubmitRspPkg;
+import com.tbtosoft.cmpp.TerminateReqPkg;
+import com.tbtosoft.cmpp.TerminateRspPkg;
 import com.tbtosoft.smio.IChain;
 import com.tbtosoft.smio.ICoder;
 import com.tbtosoft.smio.LongClientChain;
@@ -76,8 +78,11 @@ public final class ServiceProvider extends AbstractSP{
 	private void activeTest(){		
 		this.chain.write(new ActiveTestReqPkg());
 	}
+	private void write(ChannelHandlerContext ctx, IPackage t){
+		ctx.getChannel().write(t);
+	}
 	class InnerSmsIoHandler extends SimpleCmppHandler{
-
+		
 		/* (non-Javadoc)
 		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelIdle(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.smio.handlers.ActiveEvent)
 		 */
@@ -127,7 +132,26 @@ public final class ServiceProvider extends AbstractSP{
 				ConnectRspPkg connectRspPkg) {
 			logger.info(connectRspPkg.toString());
 		}
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.TerminateReqPkg)
+		 */
+		@Override
+		public void received(ChannelHandlerContext ctx,
+				TerminateReqPkg terminateReqPkg) {			
+			TerminateRspPkg terminateRspPkg = new TerminateRspPkg();
+			terminateRspPkg.setSequence(terminateReqPkg.getSequence());
+			write(ctx, terminateRspPkg);
+			
+		}
 
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.TerminateRspPkg)
+		 */
+		@Override
+		public void received(ChannelHandlerContext ctx,
+				TerminateRspPkg terminateRspPkg) {
+			
+		}
 		/* (non-Javadoc)
 		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.ActiveTestReqPkg)
 		 */
@@ -154,7 +178,7 @@ public final class ServiceProvider extends AbstractSP{
 				SubmitRspPkg submitRspPkg) {
 			
 		}
-
+		
 		/* (non-Javadoc)
 		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.DeliverReqPkg)
 		 */
