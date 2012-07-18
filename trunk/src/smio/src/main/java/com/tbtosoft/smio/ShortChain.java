@@ -150,10 +150,7 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 			}
 			return false;
 		}
-		@Override
-		public void addHandler(String name, ISmsHandler smsHandler) {
-			
-		}
+		
 		@Override
 		public boolean write(Object object) {
 			if(!isConnected()){
@@ -172,6 +169,11 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 			if(null != this.clientChannelFactory){
 				this.clientChannelFactory.releaseExternalResources();
 			}
+		}
+		@Override
+		public void setSmsHandlerFactory(ISmsHandlerFactory smsHandlerFactory) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	class Server implements IChain{
@@ -214,10 +216,7 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 			});
 			this.serverBootstrap.bind(this.localAddress);
 		}
-		@Override
-		public void addHandler(String name, ISmsHandler smsHandler) {
-			
-		}
+		
 		@Override
 		public boolean write(Object object) {
 			
@@ -231,6 +230,11 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 		@Override
 		public void close() {
 						
+		}
+		@Override
+		public void setSmsHandlerFactory(ISmsHandlerFactory smsHandlerFactory) {
+			// TODO Auto-generated method stub
+			
 		}		
 	}
 	class DefaultChannelPipeFactory implements ChannelPipelineFactory{

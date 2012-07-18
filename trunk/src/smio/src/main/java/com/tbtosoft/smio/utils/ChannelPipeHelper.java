@@ -29,8 +29,8 @@ public final class ChannelPipeHelper {
 			block.loop(entry.getKey(), entry.getValue());					
 		}
 	}
-	public final static void addLast(ChannelPipeline src, final ChannelPipeline dst){
-		lookup(dst, new IBlock() {
+	public final static void addLast(final ChannelPipeline dst,  ChannelPipeline src){
+		lookup(src, new IBlock() {
 			
 			@Override
 			public void loop(String name, ChannelHandler channelHandler) {

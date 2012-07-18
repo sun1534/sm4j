@@ -52,7 +52,7 @@ public class LongServerChain<E, T extends ICoder<E>> extends BasicChain {
 				pipeline.addLast("DECODER", new Decoder<E, T>(LongServerChain.this.coder));				
 				pipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(LongServerChain.this.timer, 0, 0, LongServerChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));				
 				pipeline.addLast("IDEL-STATE-AWARE-HANDLER",new ActiveAwareChannelHander());				
-				ChannelPipeHelper.addLast(pipeline, getChannelPipeline());				
+				ChannelPipeHelper.addLast(pipeline, getSmsHandlerFactory().getPipeline());				
 				pipeline.addLast("ENCODER", new Encoder<E, T>(LongServerChain.this.coder));
 				return pipeline;
 			}
