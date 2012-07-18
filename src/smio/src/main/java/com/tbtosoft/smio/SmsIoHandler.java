@@ -16,7 +16,7 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.tbtosoft.smio.handlers.ActiveEvent;
-import com.tbtosoft.smio.handlers.KeepAliveEvent;
+import com.tbtosoft.smio.handlers.KeepConnectionEvent;
 
 /**
  * @author chengchun
@@ -39,7 +39,7 @@ public abstract class SmsIoHandler<T> implements ISmsHandler{
 	protected void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e){
 		
 	}
-	protected void onChannelKeepAlive(ChannelHandlerContext ctx, KeepAliveEvent e){
+	protected void onChannelKeepAlive(ChannelHandlerContext ctx, KeepConnectionEvent e){
 		
 	}
 	protected void onChannelConnected(ChannelHandlerContext ctx, ChannelStateEvent e){
@@ -58,8 +58,8 @@ public abstract class SmsIoHandler<T> implements ISmsHandler{
 				throws Exception {
 			if(e instanceof ActiveEvent){
 				onChannelIdle(ctx, (ActiveEvent)e);
-			} else if(e instanceof KeepAliveEvent){
-				onChannelKeepAlive(ctx, (KeepAliveEvent)e);
+			} else if(e instanceof KeepConnectionEvent){
+				onChannelKeepAlive(ctx, (KeepConnectionEvent)e);
 			}else {
 				super.handleUpstream(ctx, e);
 			}

@@ -19,7 +19,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
  * @author chengchun
  *
  */
-public class KeepAliveChannelHanlder extends SimpleChannelUpstreamHandler {	
+public class KeepConnectionChannelHanlder extends SimpleChannelUpstreamHandler {	
 	
 	/* (non-Javadoc)
 	 * @see org.jboss.netty.channel.SimpleChannelUpstreamHandler#channelClosed(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
@@ -27,7 +27,7 @@ public class KeepAliveChannelHanlder extends SimpleChannelUpstreamHandler {
 	@Override
 	public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
 			throws Exception {
-		channelKeepAlive(ctx, new KeepAliveEvent(ctx.getChannel()));
+		channelKeepAlive(ctx, new KeepConnectionEvent(ctx.getChannel()));
 		super.channelClosed(ctx, e);		
 	}	
 	/* (non-Javadoc)
@@ -42,7 +42,7 @@ public class KeepAliveChannelHanlder extends SimpleChannelUpstreamHandler {
 		}
 		super.exceptionCaught(ctx, e);
 	}
-	private void channelKeepAlive(ChannelHandlerContext ctx, KeepAliveEvent e){
+	private void channelKeepAlive(ChannelHandlerContext ctx, KeepConnectionEvent e){
 		ctx.sendUpstream(e);
 	}
 }

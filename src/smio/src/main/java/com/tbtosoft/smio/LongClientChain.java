@@ -27,7 +27,7 @@ import org.jboss.netty.util.Timeout;
 import org.jboss.netty.util.Timer;
 
 import com.tbtosoft.smio.handlers.ActiveAwareChannelHander;
-import com.tbtosoft.smio.handlers.KeepAliveChannelHanlder;
+import com.tbtosoft.smio.handlers.KeepConnectionChannelHanlder;
 import com.tbtosoft.smio.utils.ChannelPipeHelper;
 
 
@@ -59,7 +59,7 @@ public class LongClientChain<E, T extends ICoder<E>> extends BasicChain {
 				pipeline.addLast("DECODER", new Decoder<E, T>(LongClientChain.this.coder));
 				pipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(timer, 0, 0, LongClientChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
 				pipeline.addLast("IDEL-STATE-AWARE-HANDLER",new ActiveAwareChannelHander());	
-				pipeline.addLast("KEEP-ALIVE-HANDLER", new KeepAliveChannelHanlder());
+				pipeline.addLast("KEEP-ALIVE-HANDLER", new KeepConnectionChannelHanlder());
 				ChannelPipeHelper.addLast(pipeline, getChannelPipeline());
 				pipeline.addLast("ENCODER", new Encoder<E, T>(LongClientChain.this.coder));				
 				return pipeline;
