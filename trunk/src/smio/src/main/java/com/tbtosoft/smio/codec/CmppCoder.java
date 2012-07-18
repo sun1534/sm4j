@@ -34,8 +34,8 @@ public class CmppCoder implements ICoder<IPackage> {
 	@Override
 	public ByteBuffer encode(IPackage t) {		
 		ByteBuffer buffer = ByteBuffer.allocate(1024);
-		try {
-			t.toBuffer(buffer);
+		try {			
+			t.toBuffer(buffer);			
 		} catch (CmppException e) {				
 			e.printStackTrace();
 		}
@@ -45,6 +45,16 @@ public class CmppCoder implements ICoder<IPackage> {
 	@Override
 	public int getMinBytes() {		
 		return 4;
+	}
+
+	@Override
+	public int encode(IPackage t, ByteBuffer buffer) {
+		try {			
+			return t.toBuffer(buffer);			
+		} catch (CmppException e) {				
+			e.printStackTrace();
+		}
+		return 0;
 	}
 
 }

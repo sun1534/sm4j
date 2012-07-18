@@ -17,5 +17,6 @@ import java.nio.ByteBuffer;
 public interface ICoder<T> {
 	public T decode(ByteBuffer buffer);
 	public ByteBuffer encode(T t);
+	public int encode(T t, ByteBuffer buffer);
 	public int getMinBytes();
 }
