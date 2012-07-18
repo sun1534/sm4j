@@ -47,4 +47,14 @@ public class SgipCoder implements ICoder<IPackage> {
 		return 4;
 	}
 
+	@Override
+	public int encode(IPackage t, ByteBuffer buffer) {
+		try {
+			return t.toBuffer(buffer);
+		} catch (SgipException e) {				
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
 }

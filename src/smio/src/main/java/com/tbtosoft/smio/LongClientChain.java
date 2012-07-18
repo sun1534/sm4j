@@ -9,6 +9,9 @@
 package com.tbtosoft.smio;
 
 import java.net.SocketAddress;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -17,9 +20,11 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.timeout.IdleState;
 import org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler;
@@ -57,9 +62,11 @@ public class LongClientChain<E, T extends ICoder<E>> extends BasicChain {
 			
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
+				ChannelPipeline pipeline = Channels.pipeline();		
 				ChannelPipeline channelPipeline = getChannelPipeline();
-				channelPipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(new HashedWheelTimer(), 0, 0, LongClientChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
-				channelPipeline.addLast("", new IdleStateAwareChannelHandler(){
+				pipeline.addLast("DECODER", new Decoder<E, T>(LongClientChain.this.coder));
+				pipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(timer, 0, 0, LongClientChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
+				pipeline.addLast("", new IdleStateAwareChannelHandler(){
 
 					/* (non-Javadoc)
 					 * @see org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler#channelIdle(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.handler.timeout.IdleStateEvent)
@@ -72,10 +79,15 @@ public class LongClientChain<E, T extends ICoder<E>> extends BasicChain {
 						}
 						super.channelIdle(ctx, e);
 					}						
-				});				
-				channelPipeline.addLast("ENCODER", new Encoder<E, T>(LongClientChain.this.coder));
-				channelPipeline.addLast("DECODER", new Decoder<E, T>(LongClientChain.this.coder));
-				return channelPipeline;
+				});		
+				Map<String, ChannelHandler> handlers = channelPipeline.toMap();
+				Iterator<Entry<String, ChannelHandler>> iter = handlers.entrySet().iterator();
+				while (iter.hasNext()) {
+					Entry<String, ChannelHandler> entry = iter.next();
+					pipeline.addLast(entry.getKey(), entry.getValue());					
+				}
+				pipeline.addLast("ENCODER", new Encoder<E, T>(LongClientChain.this.coder));				
+				return pipeline;
 			}
 		});
 	}

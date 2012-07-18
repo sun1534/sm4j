@@ -8,6 +8,9 @@
  */
 package com.tbtosoft.smio;
 
+import java.nio.ByteBuffer;
+
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
@@ -29,7 +32,10 @@ public class Encoder<E, T extends ICoder<E>> extends OneToOneEncoder {
 	@Override
 	protected Object encode(ChannelHandlerContext ctx, Channel channel,
 			Object msg) throws Exception {
-		return coder.encode((E)msg);
+		ByteBuffer buffer = ByteBuffer.allocate(1024);
+		int size = coder.encode((E)msg, buffer);
+		return ChannelBuffers.wrappedBuffer(buffer.array(), 0, size);
+//		return coder.encode((E)msg);
 	}
 
 }
