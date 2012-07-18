@@ -12,7 +12,9 @@ import java.net.SocketAddress;
 import java.util.Collection;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.logging.InternalLogger;
 import org.jboss.netty.logging.InternalLoggerFactory;
 
@@ -27,11 +29,12 @@ import com.tbtosoft.cmpp.TerminateReqPkg;
 import com.tbtosoft.cmpp.TerminateRspPkg;
 import com.tbtosoft.smio.IChain;
 import com.tbtosoft.smio.ICoder;
+import com.tbtosoft.smio.ISmsHandlerFactory;
 import com.tbtosoft.smio.LongClientChain;
 import com.tbtosoft.smio.ShortChain;
 import com.tbtosoft.smio.codec.CmppCoder;
 import com.tbtosoft.smio.handlers.ActiveEvent;
-import com.tbtosoft.smio.handlers.KeepAliveEvent;
+import com.tbtosoft.smio.handlers.KeepConnectionEvent;
 import com.tbtosoft.smio.handlers.SimpleCmppHandler;
 import com.tbtosoft.smsp.AbstractSP;
 
@@ -44,14 +47,22 @@ public final class ServiceProvider extends AbstractSP{
 	        InternalLoggerFactory.getInstance(ServiceProvider.class);
 	private IChain chain;
 	public ServiceProvider(SocketAddress serverAddress){
-		this.chain = new LongClientChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new CmppCoder());
-		this.chain.addHandler("INNER-SMS-IO-HANDLER", new InnerSmsIoHandler());
+		this.chain = new LongClientChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new CmppCoder());		
+		initialize();
 	}
 	public ServiceProvider(SocketAddress serverAddress, SocketAddress localAddress){
 		this.chain = new ShortChain<IPackage, ICoder<IPackage>>(serverAddress, localAddress, 30000, new CmppCoder());
-		this.chain.addHandler("INNER-SMS-IO-HANDLER", new InnerSmsIoHandler());
+		initialize();
 	}
-
+	private void initialize(){
+		this.chain.setSmsHandlerFactory(new ISmsHandlerFactory() {
+			
+			@Override
+			public ChannelPipeline getPipeline() throws Exception {
+				return  Channels.pipeline(new InnerSmsIoHandler().getChannelHandler());
+			}
+		});
+	}
 	@Override
 	public boolean start() {		
 		return this.chain.open();
@@ -97,7 +108,7 @@ public final class ServiceProvider extends AbstractSP{
 		 */
 		@Override
 		protected void onChannelKeepAlive(ChannelHandlerContext ctx,
-				KeepAliveEvent e) {
+				KeepConnectionEvent e) {
 			logger.info("try open");
 			ServiceProvider.this.chain.open();
 		}

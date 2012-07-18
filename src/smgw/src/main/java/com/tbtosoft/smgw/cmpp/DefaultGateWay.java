@@ -6,7 +6,9 @@ package com.tbtosoft.smgw.cmpp;
 import java.net.SocketAddress;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.Channels;
 import org.jboss.netty.logging.InternalLogger;
 import org.jboss.netty.logging.InternalLoggerFactory;
 
@@ -16,11 +18,12 @@ import com.tbtosoft.cmpp.IPackage;
 import com.tbtosoft.smgw.IGateWay;
 import com.tbtosoft.smio.IChain;
 import com.tbtosoft.smio.ICoder;
+import com.tbtosoft.smio.ISmsHandlerFactory;
 import com.tbtosoft.smio.LongServerChain;
 import com.tbtosoft.smio.ShortChain;
 import com.tbtosoft.smio.codec.CmppCoder;
 import com.tbtosoft.smio.handlers.ActiveEvent;
-import com.tbtosoft.smio.handlers.KeepAliveEvent;
+import com.tbtosoft.smio.handlers.KeepConnectionEvent;
 import com.tbtosoft.smio.handlers.SimpleCmppHandler;
 
 /**
@@ -33,11 +36,20 @@ public class DefaultGateWay implements IGateWay {
 	private IChain chain;
 	public DefaultGateWay(SocketAddress localAddress){
 		this.chain = new LongServerChain<IPackage, ICoder<IPackage>>(localAddress, 10000, new CmppCoder());
-		this.chain.addHandler("DEFAULT-GETWAY-HANDLER", new InnerHanlder());
+		initialize();
 	}
 	public DefaultGateWay(SocketAddress localAddress, SocketAddress serverAddress){
 		this.chain = new ShortChain<IPackage, ICoder<IPackage>>(serverAddress, localAddress, 10000, new CmppCoder());
-		this.chain.addHandler("DEFAULT-GETWAY-HANDLER", new InnerHanlder());
+		initialize();
+	}
+	private void initialize(){
+		this.chain.setSmsHandlerFactory(new ISmsHandlerFactory() {
+			
+			@Override
+			public ChannelPipeline getPipeline() throws Exception {
+				return  Channels.pipeline(new InnerHanlder().getChannelHandler());
+			}
+		});
 	}
 	@Override
 	public boolean open() {		
@@ -82,7 +94,7 @@ public class DefaultGateWay implements IGateWay {
 		 */
 		@Override
 		protected void onChannelKeepAlive(ChannelHandlerContext ctx,
-				KeepAliveEvent e) {
+				KeepConnectionEvent e) {
 			
 			super.onChannelKeepAlive(ctx, e);
 		}
