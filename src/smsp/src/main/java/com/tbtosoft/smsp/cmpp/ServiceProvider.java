@@ -16,9 +16,13 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.logging.InternalLogger;
 import org.jboss.netty.logging.InternalLoggerFactory;
 
+import com.tbtosoft.cmpp.ActiveTestReqPkg;
+import com.tbtosoft.cmpp.ActiveTestRspPkg;
 import com.tbtosoft.cmpp.ConnectReqPkg;
 import com.tbtosoft.cmpp.ConnectRspPkg;
+import com.tbtosoft.cmpp.DeliverReqPkg;
 import com.tbtosoft.cmpp.IPackage;
+import com.tbtosoft.cmpp.SubmitRspPkg;
 import com.tbtosoft.smio.IChain;
 import com.tbtosoft.smio.ICoder;
 import com.tbtosoft.smio.LongClientChain;
@@ -69,6 +73,9 @@ public final class ServiceProvider extends AbstractSP{
 		connectReqPkg.setVersion((byte)0x20);
 		this.chain.write(connectReqPkg);
 	}
+	private void activeTest(){		
+		this.chain.write(new ActiveTestReqPkg());
+	}
 	class InnerSmsIoHandler extends SimpleCmppHandler{
 
 		/* (non-Javadoc)
@@ -77,6 +84,7 @@ public final class ServiceProvider extends AbstractSP{
 		@Override
 		protected void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
 			logger.info(ctx.getChannel()+" idle.");
+			activeTest();
 		}
 
 		/* (non-Javadoc)
@@ -85,6 +93,7 @@ public final class ServiceProvider extends AbstractSP{
 		@Override
 		protected void onChannelKeepAlive(ChannelHandlerContext ctx,
 				KeepAliveEvent e) {
+			logger.info("try open");
 			ServiceProvider.this.chain.open();
 		}
 
@@ -117,6 +126,42 @@ public final class ServiceProvider extends AbstractSP{
 		public void received(ChannelHandlerContext ctx,
 				ConnectRspPkg connectRspPkg) {
 			logger.info(connectRspPkg.toString());
+		}
+
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.ActiveTestReqPkg)
+		 */
+		@Override
+		public void received(ChannelHandlerContext ctx,
+				ActiveTestReqPkg activeTestReqPkg) {
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.ActiveTestRspPkg)
+		 */
+		@Override
+		public void received(ChannelHandlerContext ctx,
+				ActiveTestRspPkg activeTestRspPkg) {
+			logger.info(activeTestRspPkg.toString());
+		}
+
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.SubmitRspPkg)
+		 */
+		@Override
+		public void received(ChannelHandlerContext ctx,
+				SubmitRspPkg submitRspPkg) {
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.DeliverReqPkg)
+		 */
+		@Override
+		public void received(ChannelHandlerContext ctx,
+				DeliverReqPkg deliverReqPkg) {
+			
 		}		
 	}
 	
