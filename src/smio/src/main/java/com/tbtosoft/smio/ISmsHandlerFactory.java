@@ -8,15 +8,12 @@
  */
 package com.tbtosoft.smio;
 
+import org.jboss.netty.channel.ChannelPipelineFactory;
 
 /**
  * @author chengchun
  *
  */
-public interface IChain {	
-//	public void addHandler(String name, ISmsHandler smsHandler);
-	public void setSmsHandlerFactory(ISmsHandlerFactory smsHandlerFactory);
-	public boolean write(Object object);
-	public boolean open();
-	public void close();
+public interface ISmsHandlerFactory extends ChannelPipelineFactory {
+
 }

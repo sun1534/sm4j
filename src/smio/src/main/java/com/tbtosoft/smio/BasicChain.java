@@ -16,6 +16,7 @@ import org.jboss.netty.channel.Channels;
  *
  */
 public class BasicChain implements IChain{	
+	private ISmsHandlerFactory smsHandlerFactory;
 	private ChannelPipeline channelPipeline = Channels.pipeline();
 //	@Override
 //	public void addHandler(String name, SmsIoHandler smsIoHandler) {
@@ -42,14 +43,25 @@ public class BasicChain implements IChain{
 		
 	}
 	
-	@Override
-	public void addHandler(String name, ISmsHandler smsHandler) {
-		this.channelPipeline.addLast(name, smsHandler.getChannelHandler());			
-	}
+//	@Override
+//	public void addHandler(String name, ISmsHandler smsHandler) {
+//		this.channelPipeline.addLast(name, smsHandler.getChannelHandler());			
+//	}
 	@Override
 	public boolean write(Object object) {
 		
 		return false;
+	}
+	/**
+	 * @param smsHandlerFactory the smsHandlerFactory to set
+	 */
+	public final void setSmsHandlerFactory(ISmsHandlerFactory smsHandlerFactory) {
+		this.smsHandlerFactory = smsHandlerFactory;
+	}
+	/**
+	 * @return the smsHandlerFactory
+	 */
+	protected final ISmsHandlerFactory getSmsHandlerFactory() {
+		return smsHandlerFactory;
 	}	
-	
 }
