@@ -58,6 +58,7 @@ abstract class AbstractPackage implements IPackage{
 		buffer.putInt(sequence);
 		this.length += 4;
 		this.length += onToBuffer(buffer);
+		buffer.putInt(0, this.length);
 		return this.length;
 	}
 	protected abstract int onToBuffer(ByteBuffer buffer) throws CmppException;
@@ -156,5 +157,28 @@ abstract class AbstractPackage implements IPackage{
 	 */
 	protected final static void setSequenceFactory(ISequenceFactory sequenceFactory) {
 		AbstractPackage.sequenceFactory = sequenceFactory;
-	}	
+	}
+	public final static String byteToHexString(byte[] data){
+        StringBuffer buffer = new StringBuffer();
+        for(int index = 0; index < data.length; index++){
+            buffer.append(String.format("%02X", data[index]));
+        }        
+        return buffer.toString();
+    }
+    public final static byte[] hexStringToByte(String hexString){
+        byte[] result = new byte[hexString.length()/2];
+        for(int index = 0; index < result.length; index++){
+            String str = hexString.substring(index*2, (index+1)*2);
+            result[index] = Byte.parseByte(str, 16);
+        }
+        return result;
+    }
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "AbstractPackage [length=" + length + ", commandId=" + commandId
+				+ ", sequence=" + sequence + "]";
+	}    
 }

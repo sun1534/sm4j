@@ -36,4 +36,11 @@ public final class ActiveTestReqPkg extends AbstractPackage {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ActiveTestReqPkg []";
+	}
 }

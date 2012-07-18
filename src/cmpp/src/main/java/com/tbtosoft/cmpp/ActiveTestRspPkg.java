@@ -52,4 +52,11 @@ public final class ActiveTestRspPkg extends AbstractPackage {
 		this.reserved = reserved;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ActiveTestRspPkg [reserved=" + reserved + "]";
+	}
 }

@@ -40,20 +40,17 @@ public final class ConnectRspPkg extends AbstractPackage{
 	 * 服务器支持的最高版本号
 	 */
 	private byte version;
-	private String password;
-	private byte[] authenticatorSource;
 	public ConnectRspPkg() {
 		super(Command.CONNECT_RSP);		
 	}
-	public ConnectRspPkg(String password, byte[] authenticatoreSource){
-		this();
-		this.password = password;
-		this.authenticatorSource = authenticatoreSource;
+	public ConnectRspPkg(byte status, String password, byte[] authenticatoreSource) throws CmppException{
+		this();		
+		setStatus(status);
+		setAuthenticatorISMG(createAuthenticatorISMG(status, authenticatoreSource, password));
 	}
 
 	@Override
-	protected int onToBuffer(ByteBuffer buffer) throws CmppException  {		
-		this.authenticatorISMG = createAuthenticatorISMG(this.status, this.authenticatorSource, this.password);		
+	protected int onToBuffer(ByteBuffer buffer) throws CmppException  {					
 		int len = 0;
 		len+=write(buffer, this.status);		
 		len+=write(buffer, this.authenticatorISMG);
@@ -124,7 +121,7 @@ public final class ConnectRspPkg extends AbstractPackage{
 			throw new CmppException(
 					"Create authenticator ISMG failure(Status:"
 							+ status + " AuthenticatorSource:"
-							+ authenticatorSource + " Password:" + this.password, e);
+							+ authenticatorSource + " Password:" + password, e);
 		}
 	}
 	/* (non-Javadoc)
@@ -134,7 +131,7 @@ public final class ConnectRspPkg extends AbstractPackage{
 	public String toString() {
 		return "ConnectRspPkg [status=" + status + ", authenticatorISMG="
 				+ Arrays.toString(authenticatorISMG) + ", version=" + version
-				+ ", password=" + password + ", authenticatorSource="
-				+ Arrays.toString(authenticatorSource) + "]";
-	}	
+				+ "]";
+	}
+	
 }
