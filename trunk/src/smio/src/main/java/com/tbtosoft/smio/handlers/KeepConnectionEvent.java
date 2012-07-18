@@ -18,9 +18,9 @@ import org.jboss.netty.channel.ChannelFuture;
  * @author chengchun
  *
  */
-public class KeepAliveEvent implements ChannelEvent {
+public class KeepConnectionEvent implements ChannelEvent {
 	private final Channel channel;
-	public KeepAliveEvent(Channel channel){
+	public KeepConnectionEvent(Channel channel){
 		this.channel = channel;
 	}
 	/* (non-Javadoc)
