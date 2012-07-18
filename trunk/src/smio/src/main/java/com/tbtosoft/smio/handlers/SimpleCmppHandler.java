@@ -19,6 +19,8 @@ import com.tbtosoft.cmpp.DeliverRspPkg;
 import com.tbtosoft.cmpp.IPackage;
 import com.tbtosoft.cmpp.SubmitReqPkg;
 import com.tbtosoft.cmpp.SubmitRspPkg;
+import com.tbtosoft.cmpp.TerminateReqPkg;
+import com.tbtosoft.cmpp.TerminateRspPkg;
 import com.tbtosoft.smio.SmsIoHandler;
 
 /**
@@ -38,14 +40,21 @@ public class SimpleCmppHandler extends SmsIoHandler<IPackage> implements ICmppHa
 	}
 
 	@Override
-	public void received(ChannelHandlerContext ctx,
-			ActiveTestReqPkg activeTestReqPkg) {
+	public void received(ChannelHandlerContext ctx,	TerminateReqPkg terminateReqPkg) {
 		
 	}
 
 	@Override
-	public void received(ChannelHandlerContext ctx,
-			ActiveTestRspPkg activeTestRspPkg) {
+	public void received(ChannelHandlerContext ctx,	TerminateRspPkg terminateRspPkg) {
+		
+	}
+	@Override
+	public void received(ChannelHandlerContext ctx,	ActiveTestReqPkg activeTestReqPkg) {
+		
+	}
+
+	@Override
+	public void received(ChannelHandlerContext ctx,	ActiveTestRspPkg activeTestRspPkg) {
 		
 	}
 
@@ -75,6 +84,10 @@ public class SimpleCmppHandler extends SmsIoHandler<IPackage> implements ICmppHa
 			received(ctx, (ConnectReqPkg)t);
 		} else if(t instanceof ConnectRspPkg){
 			received(ctx, (ConnectRspPkg)t);
+		} else if(t instanceof TerminateReqPkg){
+			received(ctx, (TerminateReqPkg)t);
+		} else if(t instanceof TerminateRspPkg){
+			received(ctx, (TerminateRspPkg)t);
 		} else if(t instanceof SubmitReqPkg){
 			received(ctx, (SubmitReqPkg)t);
 		} else if(t instanceof SubmitRspPkg){
@@ -89,4 +102,5 @@ public class SimpleCmppHandler extends SmsIoHandler<IPackage> implements ICmppHa
 			received(ctx, (ActiveTestRspPkg)t);
 		}
 	}
+
 }

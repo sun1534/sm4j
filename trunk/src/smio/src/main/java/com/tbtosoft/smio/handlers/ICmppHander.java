@@ -18,6 +18,8 @@ import com.tbtosoft.cmpp.DeliverReqPkg;
 import com.tbtosoft.cmpp.DeliverRspPkg;
 import com.tbtosoft.cmpp.SubmitReqPkg;
 import com.tbtosoft.cmpp.SubmitRspPkg;
+import com.tbtosoft.cmpp.TerminateReqPkg;
+import com.tbtosoft.cmpp.TerminateRspPkg;
 
 /**
  * @author chengchun
@@ -26,6 +28,8 @@ import com.tbtosoft.cmpp.SubmitRspPkg;
 interface ICmppHander {
 	public void received(ChannelHandlerContext ctx, ConnectReqPkg connectReqPkg);
 	public void received(ChannelHandlerContext ctx, ConnectRspPkg connectRspPkg);
+	public void received(ChannelHandlerContext ctx, TerminateReqPkg terminateReqPkg);
+	public void received(ChannelHandlerContext ctx, TerminateRspPkg terminateRspPkg);
 	public void received(ChannelHandlerContext ctx, ActiveTestReqPkg activeTestReqPkg);
 	public void received(ChannelHandlerContext ctx, ActiveTestRspPkg activeTestRspPkg);
 	public void received(ChannelHandlerContext ctx, SubmitReqPkg submitReqPkg);
