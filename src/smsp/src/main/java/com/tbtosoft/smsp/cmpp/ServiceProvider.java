@@ -11,6 +11,7 @@ package com.tbtosoft.smsp.cmpp;
 import java.net.SocketAddress;
 import java.util.Collection;
 
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -28,7 +29,6 @@ import com.tbtosoft.cmpp.SubmitRspPkg;
 import com.tbtosoft.cmpp.TerminateReqPkg;
 import com.tbtosoft.cmpp.TerminateRspPkg;
 import com.tbtosoft.smio.IChain;
-import com.tbtosoft.smio.ICoder;
 import com.tbtosoft.smio.ISmsHandlerFactory;
 import com.tbtosoft.smio.LongClientChain;
 import com.tbtosoft.smio.ShortChain;
@@ -47,11 +47,11 @@ public final class ServiceProvider extends AbstractSP{
 	        InternalLoggerFactory.getInstance(ServiceProvider.class);
 	private IChain chain;
 	public ServiceProvider(SocketAddress serverAddress){
-		this.chain = new LongClientChain<IPackage, ICoder<IPackage>>(serverAddress, 30000, new CmppCoder());		
+		this.chain = new LongClientChain(serverAddress, 30000, new CmppCoder());		
 		initialize();
 	}
 	public ServiceProvider(SocketAddress serverAddress, SocketAddress localAddress){
-		this.chain = new ShortChain<IPackage, ICoder<IPackage>>(serverAddress, localAddress, 30000, new CmppCoder());
+		this.chain = new ShortChain(serverAddress, localAddress, 30000, new CmppCoder());
 		initialize();
 	}
 	private void initialize(){
@@ -81,13 +81,13 @@ public final class ServiceProvider extends AbstractSP{
 //		return link.write(submitReqPkg);
 		return true;
 	}
-	private void login(){
+	private void login(Channel channel){
 		ConnectReqPkg connectReqPkg = new ConnectReqPkg("1234", "1234");		
 		connectReqPkg.setVersion((byte)0x20);
-		this.chain.write(connectReqPkg);
+		channel.write(connectReqPkg);
 	}
-	private void activeTest(){		
-		this.chain.write(new ActiveTestReqPkg());
+	private void activeTest(Channel channel){		
+		channel.write(new ActiveTestReqPkg());
 	}
 	private void write(ChannelHandlerContext ctx, IPackage t){
 		ctx.getChannel().write(t);
@@ -100,7 +100,7 @@ public final class ServiceProvider extends AbstractSP{
 		@Override
 		protected void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
 			logger.info(ctx.getChannel()+" idle.");
-			activeTest();
+			activeTest(ctx.getChannel());
 		}
 
 		/* (non-Javadoc)
@@ -120,7 +120,7 @@ public final class ServiceProvider extends AbstractSP{
 		protected void onChannelConnected(ChannelHandlerContext ctx,
 				ChannelStateEvent e) {
 			logger.info(ctx.getChannel()+" connected.");
-			login();
+			login(ctx.getChannel());
 		}
 
 		/* (non-Javadoc)
