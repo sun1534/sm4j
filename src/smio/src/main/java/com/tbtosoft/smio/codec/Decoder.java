@@ -6,13 +6,15 @@
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  */
-package com.tbtosoft.smio;
+package com.tbtosoft.smio.codec;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
+
+import com.tbtosoft.smio.ICoder;
 
 /**
  * @author chengchun
