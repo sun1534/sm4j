@@ -29,14 +29,14 @@ import com.tbtosoft.smio.utils.ChannelPipeHelper;
  * @author chengchun
  *
  */
-public class LongServerChain<E, T extends ICoder<E>> extends BasicChain {
-	private final T coder;
+public class LongServerChain extends BasicChain {
+	private final ICoder coder;
 	private final SocketAddress localAddress;
 	private final long activeTimeMillis;
 	private final Timer timer;
 	private ServerChannelFactory serverChannelFactory;
 	private ServerBootstrap serverBootstrap;	
-	public LongServerChain(SocketAddress address, long activeTimeMillis, T coder){
+	public LongServerChain(SocketAddress address, long activeTimeMillis, ICoder coder){
 		this.coder =coder;
 		this.localAddress = address;
 		this.activeTimeMillis = activeTimeMillis;
@@ -49,11 +49,11 @@ public class LongServerChain<E, T extends ICoder<E>> extends BasicChain {
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = Channels.pipeline();		
-				pipeline.addLast("DECODER", new Decoder<E, T>(LongServerChain.this.coder));				
+				pipeline.addLast("DECODER", new Decoder(LongServerChain.this.coder));				
 				pipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(LongServerChain.this.timer, 0, 0, LongServerChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));				
-				pipeline.addLast("IDEL-STATE-AWARE-HANDLER",new ActiveAwareChannelHander());				
+				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHander());				
 				ChannelPipeHelper.addLast(pipeline, getSmsHandlerFactory().getPipeline());				
-				pipeline.addLast("ENCODER", new Encoder<E, T>(LongServerChain.this.coder));
+				pipeline.addLast("ENCODER", new Encoder(LongServerChain.this.coder));
 				return pipeline;
 			}
 		});

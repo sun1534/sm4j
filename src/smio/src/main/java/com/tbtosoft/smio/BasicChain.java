@@ -8,8 +8,6 @@
  */
 package com.tbtosoft.smio;
 
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.Channels;
 
 /**
  * @author chengchun
@@ -17,14 +15,6 @@ import org.jboss.netty.channel.Channels;
  */
 public class BasicChain implements IChain{	
 	private ISmsHandlerFactory smsHandlerFactory;
-	private ChannelPipeline channelPipeline = Channels.pipeline();
-//	@Override
-//	public void addHandler(String name, SmsIoHandler smsIoHandler) {
-//		this.channelPipeline.addLast(name, smsIoHandler);		
-//	}
-	protected ChannelPipeline getChannelPipeline(){
-		return this.channelPipeline;
-	}
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.smio.IChain#open()
 	 */
@@ -39,19 +29,9 @@ public class BasicChain implements IChain{
 	 */
 	@Override
 	public void close() {
-		
-		
-	}
 	
-//	@Override
-//	public void addHandler(String name, ISmsHandler smsHandler) {
-//		this.channelPipeline.addLast(name, smsHandler.getChannelHandler());			
-//	}
-	@Override
-	public boolean write(Object object) {
-		
-		return false;
 	}
+
 	/**
 	 * @param smsHandlerFactory the smsHandlerFactory to set
 	 */
