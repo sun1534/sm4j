@@ -24,10 +24,10 @@ import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
-import com.tbtosoft.smio.codec.Decoder;
-import com.tbtosoft.smio.codec.Encoder;
-import com.tbtosoft.smio.handlers.ActiveAwareChannelHander;
-import com.tbtosoft.smio.handlers.KeepConnectionChannelHanlder;
+import com.tbtosoft.smio.codec.DecodeHandler;
+import com.tbtosoft.smio.codec.EncodeHandler;
+import com.tbtosoft.smio.handlers.ActiveAwareChannelHandler;
+import com.tbtosoft.smio.handlers.KeepConnectionChannelHandler;
 import com.tbtosoft.smio.utils.ChannelPipeHelper;
 
 
@@ -55,12 +55,12 @@ public class LongClientChain extends BasicChain {
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				final ChannelPipeline pipeline = Channels.pipeline();
-				pipeline.addLast("DECODER", new Decoder(LongClientChain.this.coder));
+				pipeline.addLast("DECODER", new DecodeHandler(LongClientChain.this.coder));
 				pipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(timer, 0, 0, LongClientChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
-				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHander());	
-				pipeline.addLast("KEEP-ALIVE-HANDLER", new KeepConnectionChannelHanlder());
+				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());	
+				pipeline.addLast("KEEP-ALIVE-HANDLER", new KeepConnectionChannelHandler());
 				ChannelPipeHelper.addLast(pipeline, getSmsHandlerFactory().getPipeline());
-				pipeline.addLast("ENCODER", new Encoder(LongClientChain.this.coder));				
+				pipeline.addLast("ENCODER", new EncodeHandler(LongClientChain.this.coder));				
 				return pipeline;
 			}
 		});

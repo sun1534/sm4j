@@ -20,9 +20,9 @@ import com.tbtosoft.smio.ICoder;
  * @author chengchun
  *
  */
-public class Decoder extends FrameDecoder{		
+public class DecodeHandler extends FrameDecoder{		
 	private ICoder coder;
-	public Decoder(ICoder coder){
+	public DecodeHandler(ICoder coder){
 		this.coder = coder;
 	}
 	@Override

@@ -22,9 +22,9 @@ import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
-import com.tbtosoft.smio.codec.Decoder;
-import com.tbtosoft.smio.codec.Encoder;
-import com.tbtosoft.smio.handlers.ActiveAwareChannelHander;
+import com.tbtosoft.smio.codec.DecodeHandler;
+import com.tbtosoft.smio.codec.EncodeHandler;
+import com.tbtosoft.smio.handlers.ActiveAwareChannelHandler;
 import com.tbtosoft.smio.utils.ChannelPipeHelper;
 
 /**
@@ -51,11 +51,11 @@ public class LongServerChain extends BasicChain {
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = Channels.pipeline();		
-				pipeline.addLast("DECODER", new Decoder(LongServerChain.this.coder));				
+				pipeline.addLast("DECODER", new DecodeHandler(LongServerChain.this.coder));				
 				pipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(LongServerChain.this.timer, 0, 0, LongServerChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));				
-				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHander());				
+				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());				
 				ChannelPipeHelper.addLast(pipeline, getSmsHandlerFactory().getPipeline());				
-				pipeline.addLast("ENCODER", new Encoder(LongServerChain.this.coder));
+				pipeline.addLast("ENCODER", new EncodeHandler(LongServerChain.this.coder));
 				return pipeline;
 			}
 		});
