@@ -17,7 +17,6 @@ import com.tbtosoft.cmpp.ConnectRspPkg;
 import com.tbtosoft.cmpp.IPackage;
 import com.tbtosoft.smgw.IGateWay;
 import com.tbtosoft.smio.IChain;
-import com.tbtosoft.smio.ICoder;
 import com.tbtosoft.smio.ISmsHandlerFactory;
 import com.tbtosoft.smio.LongServerChain;
 import com.tbtosoft.smio.ShortChain;
@@ -35,11 +34,11 @@ public class DefaultGateWay implements IGateWay {
 	        InternalLoggerFactory.getInstance(DefaultGateWay.class);
 	private IChain chain;
 	public DefaultGateWay(SocketAddress localAddress){
-		this.chain = new LongServerChain<IPackage, ICoder<IPackage>>(localAddress, 10000, new CmppCoder());
+		this.chain = new LongServerChain(localAddress, 10000, new CmppCoder());
 		initialize();
 	}
 	public DefaultGateWay(SocketAddress localAddress, SocketAddress serverAddress){
-		this.chain = new ShortChain<IPackage, ICoder<IPackage>>(serverAddress, localAddress, 10000, new CmppCoder());
+		this.chain = new ShortChain(serverAddress, localAddress, 10000, new CmppCoder());
 		initialize();
 	}
 	private void initialize(){
