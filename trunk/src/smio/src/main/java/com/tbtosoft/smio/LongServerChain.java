@@ -22,6 +22,8 @@ import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
+import com.tbtosoft.smio.codec.Decoder;
+import com.tbtosoft.smio.codec.Encoder;
 import com.tbtosoft.smio.handlers.ActiveAwareChannelHander;
 import com.tbtosoft.smio.utils.ChannelPipeHelper;
 
