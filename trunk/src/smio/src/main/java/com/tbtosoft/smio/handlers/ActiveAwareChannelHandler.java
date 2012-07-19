@@ -17,7 +17,7 @@ import org.jboss.netty.handler.timeout.IdleStateEvent;
  * @author chengchun
  *
  */
-public class ActiveAwareChannelHander extends IdleStateAwareChannelHandler {
+public class ActiveAwareChannelHandler extends IdleStateAwareChannelHandler {
 
 	/* (non-Javadoc)
 	 * @see org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler#channelIdle(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.handler.timeout.IdleStateEvent)

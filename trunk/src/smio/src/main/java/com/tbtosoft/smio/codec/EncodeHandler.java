@@ -21,10 +21,10 @@ import com.tbtosoft.smio.ICoder;
  * @author chengchun
  *
  */
-public class Encoder extends OneToOneEncoder {
+public class EncodeHandler extends OneToOneEncoder {
 	
 	private ICoder coder;
-	public Encoder(ICoder coder){
+	public EncodeHandler(ICoder coder){
 		this.coder = coder;		
 	}
 	/* (non-Javadoc)

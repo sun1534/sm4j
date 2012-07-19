@@ -27,7 +27,7 @@ import com.tbtosoft.smio.SmsIoHandler;
  * @author chengchun
  *
  */
-public class SimpleCmppHandler extends SmsIoHandler<IPackage> implements ICmppHander{
+public class SimpleCmppHandler extends SmsIoHandler<IPackage> implements ICmppHandler{
 
 	@Override
 	public void received(ChannelHandlerContext ctx, ConnectReqPkg connectReqPkg) {

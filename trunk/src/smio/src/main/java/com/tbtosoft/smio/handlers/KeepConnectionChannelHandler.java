@@ -19,7 +19,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
  * @author chengchun
  *
  */
-public class KeepConnectionChannelHanlder extends SimpleChannelUpstreamHandler {	
+public class KeepConnectionChannelHandler extends SimpleChannelUpstreamHandler {	
 	
 	/* (non-Javadoc)
 	 * @see org.jboss.netty.channel.SimpleChannelUpstreamHandler#channelClosed(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
