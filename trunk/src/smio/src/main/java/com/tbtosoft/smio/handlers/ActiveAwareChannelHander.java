@@ -26,9 +26,12 @@ public class ActiveAwareChannelHander extends IdleStateAwareChannelHandler {
 	public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e)
 			throws Exception {
 		if(IdleState.ALL_IDLE == e.getState()){
-			ctx.sendUpstream(new ActiveEvent(e.getChannel(), e.getLastActivityTimeMillis()));
+			channelActive(ctx, new ActiveEvent(e.getChannel(), e.getLastActivityTimeMillis()));
 		} else {
 			super.channelIdle(ctx, e);
 		}
-	}	
+	}
+	private void channelActive(ChannelHandlerContext ctx, ActiveEvent e){
+		ctx.sendUpstream(e);
+	}
 }
