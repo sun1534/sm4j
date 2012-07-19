@@ -10,7 +10,6 @@ package com.tbtosoft.smio;
 
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -18,29 +17,23 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ServerChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.timeout.IdleState;
-import org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler;
-import org.jboss.netty.handler.timeout.IdleStateEvent;
-import org.jboss.netty.handler.timeout.IdleStateHandler;
-import org.jboss.netty.util.HashedWheelTimer;
 
 /**
  * @author chengchun
  *
  */
-public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
-	private final T coder;
+public class ShortChain extends BasicChain {
+	private final ICoder coder;
 	private final long activeTimeMillis;
 	private final Client client;
 	private final Server server;	
 	private volatile long keepAliveTimeMillis;
-	public ShortChain(SocketAddress serverAddress, SocketAddress localAddress, long activeTimeMillis, T coder){
+	public ShortChain(SocketAddress serverAddress, SocketAddress localAddress, long activeTimeMillis, ICoder coder){
 		this.coder = coder;
 		this.activeTimeMillis = activeTimeMillis;
 		this.client = new Client(serverAddress);
@@ -77,16 +70,7 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 		this.client.close();
 		this.server.close();
 	}
-	/* (non-Javadoc)
-	 * @see com.tbtosoft.smio.BasicChain#write(java.lang.Object)
-	 */
-	@Override
-	public boolean write(Object object) {		
-		return writeToRemote(object);
-	}	
-	private boolean writeToRemote(Object object){
-		return false;
-	}
+	
 	class Client implements IChain{
 		private ClientBootstrap clientBootstrap;
 		private ChannelFactory clientChannelFactory;
@@ -97,32 +81,13 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 			this.clientChannelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
 					Executors.newCachedThreadPool());
 			this.clientBootstrap = new ClientBootstrap(this.clientChannelFactory);
-			this.clientBootstrap.setPipelineFactory(new DefaultChannelPipeFactory() {
-
-				/* (non-Javadoc)
-				 * @see com.tbtosoft.smio.ShortChain.DefaultChannelPipeFactory#getPipeline()
-				 */
+			this.clientBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+				
 				@Override
 				public ChannelPipeline getPipeline() throws Exception {
-					ChannelPipeline channelPipeline =  super.getPipeline();
-					channelPipeline.addLast("", new IdleStateAwareChannelHandler(){
-
-						/* (non-Javadoc)
-						 * @see org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler#channelIdle(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.handler.timeout.IdleStateEvent)
-						 */
-						@Override
-						public void channelIdle(ChannelHandlerContext ctx,
-								IdleStateEvent e) throws Exception {
-							if(IdleState.ALL_IDLE == e.getState()){
-								if(null != Client.this.channel){
-									Client.this.channel.close();
-								}
-							}
-							super.channelIdle(ctx, e);
-						}						
-					});
-					return channelPipeline;
-				}			
+					
+					return null;
+				}
 			});
 		}
 		private void connect(){
@@ -151,13 +116,7 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 			return false;
 		}
 		
-		@Override
-		public boolean write(Object object) {
-			if(!isConnected()){
-				connect();
-			}
-			return false;
-		}
+		
 		@Override
 		public boolean open() {
 			
@@ -172,7 +131,6 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 		}
 		@Override
 		public void setSmsHandlerFactory(ISmsHandlerFactory smsHandlerFactory) {
-			// TODO Auto-generated method stub
 			
 		}
 	}
@@ -180,48 +138,22 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 		private final SocketAddress localAddress;
 		private ServerChannelFactory serverChannelFactory;
 		private ServerBootstrap serverBootstrap;
-		private volatile Channel channel;
 		public Server(SocketAddress localAddress){
 			this.localAddress = localAddress;
 			this.serverChannelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), 
 					Executors.newCachedThreadPool());
 			this.serverBootstrap = new ServerBootstrap(this.serverChannelFactory);
-			this.serverBootstrap.setPipelineFactory(new DefaultChannelPipeFactory() {
-
-				/* (non-Javadoc)
-				 * @see com.tbtosoft.smio.ShortChain.DefaultChannelPipeFactory#getPipeline()
-				 */
+			this.serverBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+				
 				@Override
-				public ChannelPipeline getPipeline() throws Exception {					
-					ChannelPipeline channelPipeline = super.getPipeline();
-					channelPipeline.addLast("", new IdleStateAwareChannelHandler(){
-
-						/* (non-Javadoc)
-						 * @see org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler#channelIdle(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.handler.timeout.IdleStateEvent)
-						 */
-						@Override
-						public void channelIdle(ChannelHandlerContext ctx,
-								IdleStateEvent e) throws Exception {
-							if(IdleState.ALL_IDLE == e.getState()){
-								if(null != Server.this.channel){
-									Server.this.channel.close();
-								}
-							}
-							super.channelIdle(ctx, e);
-						}						
-					});
-					return  channelPipeline;
+				public ChannelPipeline getPipeline() throws Exception {
+					
+					return null;
 				}
-								
 			});
 			this.serverBootstrap.bind(this.localAddress);
 		}
-		
-		@Override
-		public boolean write(Object object) {
-			
-			return false;
-		}
+				
 		@Override
 		public boolean open() {
 			
@@ -233,20 +165,7 @@ public class ShortChain<E, T extends ICoder<E>> extends BasicChain {
 		}
 		@Override
 		public void setSmsHandlerFactory(ISmsHandlerFactory smsHandlerFactory) {
-			// TODO Auto-generated method stub
 			
 		}		
-	}
-	class DefaultChannelPipeFactory implements ChannelPipelineFactory{
-
-		@Override
-		public ChannelPipeline getPipeline() throws Exception {
-			ChannelPipeline channelPipeline = getChannelPipeline();
-			channelPipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(new HashedWheelTimer(), 0, 0, ShortChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));			
-			channelPipeline.addLast("ENCODER", new Encoder<E, T>(ShortChain.this.coder));
-			channelPipeline.addLast("DECODER", new Decoder<E, T>(ShortChain.this.coder));
-			return channelPipeline;
-		}
-		
 	}
 }

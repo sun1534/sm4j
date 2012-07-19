@@ -18,9 +18,9 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
  * @author chengchun
  *
  */
-public class Decoder<E, T extends ICoder<E>> extends FrameDecoder{		
-	private T coder;
-	public Decoder(T coder){
+public class Decoder extends FrameDecoder{		
+	private ICoder coder;
+	public Decoder(ICoder coder){
 		this.coder = coder;
 	}
 	@Override

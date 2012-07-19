@@ -6,17 +6,12 @@
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  */
-package com.tbtosoft.smio;
-
-import java.nio.ByteBuffer;
+package com.tbtosoft.smio.impl;
 
 /**
  * @author chengchun
  *
  */
-public interface ICoder {
-	public Object decode(ByteBuffer buffer);
-	public ByteBuffer encode(Object t);
-	public int encode(Object t, ByteBuffer buffer);
-	public int getMinBytes();
+public class ShortChannelPipeFactory extends BasicChannelPipeFactory{
+
 }

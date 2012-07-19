@@ -19,10 +19,10 @@ import com.tbtosoft.smio.ICoder;
  * @author chengchun
  *
  */
-public class CmppCoder implements ICoder<IPackage> {
+public class CmppCoder implements ICoder {
 
 	@Override
-	public IPackage decode(ByteBuffer buffer) {		
+	public Object decode(ByteBuffer buffer) {		
 		try {
 			return Packages.parse(buffer);
 		} catch (CmppException e) {				
@@ -32,10 +32,12 @@ public class CmppCoder implements ICoder<IPackage> {
 	}
 
 	@Override
-	public ByteBuffer encode(IPackage t) {		
+	public ByteBuffer encode(Object t) {		
 		ByteBuffer buffer = ByteBuffer.allocate(1024);
-		try {			
-			t.toBuffer(buffer);			
+		try {	
+			if(t instanceof IPackage){
+				((IPackage)t).toBuffer(buffer);			
+			}
 		} catch (CmppException e) {				
 			e.printStackTrace();
 		}
@@ -48,9 +50,11 @@ public class CmppCoder implements ICoder<IPackage> {
 	}
 
 	@Override
-	public int encode(IPackage t, ByteBuffer buffer) {
-		try {			
-			return t.toBuffer(buffer);			
+	public int encode(Object t, ByteBuffer buffer) {
+		try {		
+			if(t instanceof IPackage){
+				return ((IPackage)t).toBuffer(buffer);
+			}
 		} catch (CmppException e) {				
 			e.printStackTrace();
 		}

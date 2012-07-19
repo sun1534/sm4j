@@ -19,10 +19,10 @@ import com.tbtosoft.smio.ICoder;
  * @author chengchun
  *
  */
-public class SgipCoder implements ICoder<IPackage> {
+public class SgipCoder implements ICoder {
 
 	@Override
-	public IPackage decode(ByteBuffer buffer) {		
+	public Object decode(ByteBuffer buffer) {		
 		try {
 			return Packages.parse(buffer);
 		} catch (SgipException e) {				
@@ -32,10 +32,12 @@ public class SgipCoder implements ICoder<IPackage> {
 	}
 
 	@Override
-	public ByteBuffer encode(IPackage t) {		
+	public ByteBuffer encode(Object t) {		
 		ByteBuffer buffer = ByteBuffer.allocate(1024);
 		try {
-			t.toBuffer(buffer);
+			if(t instanceof IPackage){
+				((IPackage)t).toBuffer(buffer);
+			}
 		} catch (SgipException e) {				
 			e.printStackTrace();
 		}
@@ -48,9 +50,11 @@ public class SgipCoder implements ICoder<IPackage> {
 	}
 
 	@Override
-	public int encode(IPackage t, ByteBuffer buffer) {
+	public int encode(Object t, ByteBuffer buffer) {
 		try {
-			return t.toBuffer(buffer);
+			if(t instanceof IPackage){
+				return ((IPackage)t).toBuffer(buffer);
+			}
 		} catch (SgipException e) {				
 			e.printStackTrace();
 		}

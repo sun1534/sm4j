@@ -19,23 +19,21 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
  * @author chengchun
  *
  */
-public class Encoder<E, T extends ICoder<E>> extends OneToOneEncoder {
+public class Encoder extends OneToOneEncoder {
 	
-	private T coder;
-	public Encoder(T coder){
+	private ICoder coder;
+	public Encoder(ICoder coder){
 		this.coder = coder;		
 	}
 	/* (non-Javadoc)
 	 * @see org.jboss.netty.handler.codec.oneone.OneToOneEncoder#encode(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.Channel, java.lang.Object)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Object encode(ChannelHandlerContext ctx, Channel channel,
 			Object msg) throws Exception {
 		ByteBuffer buffer = ByteBuffer.allocate(1024);
-		int size = coder.encode((E)msg, buffer);
+		int size = coder.encode(msg, buffer);
 		return ChannelBuffers.wrappedBuffer(buffer.array(), 0, size);
-//		return coder.encode((E)msg);
 	}
 
 }
