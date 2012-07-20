@@ -22,7 +22,6 @@ class BasicChannelPipeFactory implements ChannelPipelineFactory {
 	 */
 	@Override
 	public ChannelPipeline getPipeline() throws Exception {
-		
 		return null;
 	}
 
