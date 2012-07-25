@@ -42,13 +42,7 @@ public class DefaultGateWay implements IGateWay {
 		initialize();
 	}
 	private void initialize(){
-		this.chain.setSmsHandlerFactory(new ISmsHandlerFactory() {
-			
-			@Override
-			public ChannelPipeline getPipeline() throws Exception {
-				return  Channels.pipeline(new InnerHanlder().getChannelHandler());
-			}
-		});
+		
 	}
 	@Override
 	public boolean open() {		
@@ -58,71 +52,5 @@ public class DefaultGateWay implements IGateWay {
 	public void close() {
 		this.chain.close();
 	}
-	class InnerHanlder extends SimpleCmppHandler{
-		
-		
-		/* (non-Javadoc)
-		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelConnected(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
-		 */
-		@Override
-		protected void onChannelConnected(ChannelHandlerContext ctx,
-				ChannelStateEvent e) {
-			logger.info(ctx.getChannel().toString()+" incoming...");		
-		}
-
-		/* (non-Javadoc)
-		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelDisconnected(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
-		 */
-		@Override
-		protected void onChannelDisconnected(ChannelHandlerContext ctx,
-				ChannelStateEvent e) {
-			logger.info(ctx.getChannel().toString()+" outgoing...");
-		}
-
-		/* (non-Javadoc)
-		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelIdle(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.smio.handlers.ActiveEvent)
-		 */
-		@Override
-		protected void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
-			logger.info("ActiveTest");			
-			super.onChannelIdle(ctx, e);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.tbtosoft.smio.SmsIoHandler#onChannelKeepAlive(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.smio.handlers.KeepAliveEvent)
-		 */
-		@Override
-		protected void onChannelKeepAlive(ChannelHandlerContext ctx,
-				KeepConnectionEvent e) {
-			
-			super.onChannelKeepAlive(ctx, e);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.ConnectReqPkg)
-		 */
-		@Override
-		public void received(ChannelHandlerContext ctx,
-				ConnectReqPkg connectReqPkg) {			
-			super.received(ctx, connectReqPkg);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#received(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.ConnectRspPkg)
-		 */
-		@Override
-		public void received(ChannelHandlerContext ctx,
-				ConnectRspPkg connectRspPkg) {			
-			super.received(ctx, connectRspPkg);
-		}
-
-		/* (non-Javadoc)
-		 * @see com.tbtosoft.smio.handlers.SimpleCmppHandler#receiveImpl(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.cmpp.IPackage)
-		 */
-		@Override
-		protected void receiveImpl(ChannelHandlerContext ctx, IPackage t) {			
-			super.receiveImpl(ctx, t);
-		}
-		
-	}	
+	
 }
