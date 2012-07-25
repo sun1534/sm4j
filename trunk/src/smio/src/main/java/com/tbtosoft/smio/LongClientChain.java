@@ -10,24 +10,17 @@ package com.tbtosoft.smio;
 
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.timeout.IdleStateHandler;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
-import com.tbtosoft.smio.handlers.ActiveAwareChannelHandler;
-import com.tbtosoft.smio.handlers.DecodeHandler;
-import com.tbtosoft.smio.handlers.EncodeHandler;
-import com.tbtosoft.smio.handlers.KeepConnectionChannelHandler;
+import com.tbtosoft.smio.impl.LongChannelPipeFactory;
 import com.tbtosoft.smio.utils.ChannelPipeHelper;
 
 
@@ -49,21 +42,37 @@ public class LongClientChain extends BasicChain {
 		this.serverAddress = socketAddress;
 		clientChannelFactory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
 				Executors.newCachedThreadPool());
-		clientBootstrap = new ClientBootstrap(clientChannelFactory);	
-		clientBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-			
+		clientBootstrap = new ClientBootstrap(clientChannelFactory);
+		clientBootstrap.setOption("remoteAddress", this.serverAddress);
+		clientBootstrap.setPipelineFactory(new LongChannelPipeFactory(this.clientBootstrap, this.coder, this.timer, this.activeTimeMillis){
+
+			/* (non-Javadoc)
+			 * @see com.tbtosoft.smio.impl.LongChannelPipeFactory#getPipeline()
+			 */
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
-				final ChannelPipeline pipeline = Channels.pipeline();
-				pipeline.addLast("DECODER", new DecodeHandler(LongClientChain.this.coder));
-				pipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(timer, 0, 0, LongClientChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
-				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());	
-				pipeline.addLast("KEEP-ALIVE-HANDLER", new KeepConnectionChannelHandler());
+				ChannelPipeline pipeline = super.getPipeline();
 				ChannelPipeHelper.addLast(pipeline, getSmsHandlerFactory().getPipeline());
-				pipeline.addLast("ENCODER", new EncodeHandler(LongClientChain.this.coder));				
 				return pipeline;
 			}
+			
 		});
+//		clientBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+//			
+//			@Override
+//			public ChannelPipeline getPipeline() throws Exception {
+//				final ChannelPipeline pipeline = Channels.pipeline();
+//				//pipeline.addLast("LOGGER", new LoggingHandler(InternalLogLevel.INFO, true));
+//				pipeline.addLast("DECODER", new DecodeHandler(LongClientChain.this.coder));
+//				pipeline.addLast("ENCODER", new EncodeHandler(LongClientChain.this.coder));	
+//				pipeline.addLast("IDLE-STATE-HANDLER", new IdleStateHandler(timer, 0, 0, LongClientChain.this.activeTimeMillis, TimeUnit.MILLISECONDS));
+//				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());	
+//				pipeline.addLast("KEEP-ALIVE-HANDLER", new KeepConnectionChannelHandler());
+//				ChannelPipeHelper.addLast(pipeline, getSmsHandlerFactory().getPipeline());
+//				//pipeline.addLast("ENCODER", new EncodeHandler(LongClientChain.this.coder));				
+//				return pipeline;
+//			}
+//		});
 	}
 	
 	/* (non-Javadoc)
@@ -86,10 +95,10 @@ public class LongClientChain extends BasicChain {
 			return;
 		}
 		ChannelFuture channelFuture = this.clientBootstrap.connect(this.serverAddress);
-		channelFuture.awaitUninterruptibly();
-		if(!channelFuture.isSuccess()){			
-			return ;
-		}
+//		channelFuture.awaitUninterruptibly();
+//		if(!channelFuture.isSuccess()){			
+//			return ;
+//		}
 		this.channel = channelFuture.getChannel();		
 	}	
 	/* (non-Javadoc)

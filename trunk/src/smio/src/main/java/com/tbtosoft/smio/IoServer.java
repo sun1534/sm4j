@@ -8,23 +8,22 @@
  */
 package com.tbtosoft.smio;
 
-import java.util.concurrent.Executors;
+import java.net.SocketAddress;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.ServerChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+
+import com.tbtosoft.smio.impl.IOServerBootStrap;
 
 /**
  * @author chengchun
  *
  */
 public class IoServer {
-	private ServerChannelFactory channelFactory;
-	private ServerBootstrap serverBootstrap;
-	public IoServer(){
-		this.channelFactory = new NioServerSocketChannelFactory(
-				Executors.newCachedThreadPool(),
-				Executors.newCachedThreadPool());
-		this.serverBootstrap = new ServerBootstrap(this.channelFactory);
-	}	
+	private IOServerBootStrap serverBootStrap;	
+	public IoServer(ICoder coder, SocketAddress localAddress){
+		this.serverBootStrap = new IOServerBootStrap(new NioServerSocketChannelFactory());
+		this.serverBootStrap.setCoder(coder);
+		this.serverBootStrap.setOption("localAddress", localAddress);
+	}
+	
 }

@@ -25,7 +25,7 @@ import com.tbtosoft.cmpp.TerminateRspPkg;
  * @author chengchun
  *
  */
-interface ICmppHandler {
+public interface ICmppHandler {
 	public void received(ChannelHandlerContext ctx, ConnectReqPkg connectReqPkg);
 	public void received(ChannelHandlerContext ctx, ConnectRspPkg connectRspPkg);
 	public void received(ChannelHandlerContext ctx, TerminateReqPkg terminateReqPkg);

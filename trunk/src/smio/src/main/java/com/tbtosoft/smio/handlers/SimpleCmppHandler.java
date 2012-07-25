@@ -21,6 +21,7 @@ import com.tbtosoft.cmpp.SubmitReqPkg;
 import com.tbtosoft.cmpp.SubmitRspPkg;
 import com.tbtosoft.cmpp.TerminateReqPkg;
 import com.tbtosoft.cmpp.TerminateRspPkg;
+import com.tbtosoft.smio.ISmsHandler;
 import com.tbtosoft.smio.SmsIoHandler;
 
 /**
@@ -28,54 +29,81 @@ import com.tbtosoft.smio.SmsIoHandler;
  *
  */
 public class SimpleCmppHandler extends SmsIoHandler<IPackage> implements ICmppHandler{
-
+	private ICmppHandler cmppHandler;
+	public SimpleCmppHandler(){
+		
+	}
+	public SimpleCmppHandler(ICmppHandler cmppHandler, ISmsHandler smsHandler){
+		super(smsHandler);
+		this.cmppHandler = cmppHandler;		
+	}
 	@Override
 	public void received(ChannelHandlerContext ctx, ConnectReqPkg connectReqPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, connectReqPkg);
+		}
 	}
 
 	@Override
 	public void received(ChannelHandlerContext ctx, ConnectRspPkg connectRspPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, connectRspPkg);
+		}
 	}
 
 	@Override
 	public void received(ChannelHandlerContext ctx,	TerminateReqPkg terminateReqPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, terminateReqPkg);
+		}
 	}
 
 	@Override
 	public void received(ChannelHandlerContext ctx,	TerminateRspPkg terminateRspPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, terminateRspPkg);
+		}
 	}
 	@Override
 	public void received(ChannelHandlerContext ctx,	ActiveTestReqPkg activeTestReqPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, activeTestReqPkg);
+		}
 	}
 
 	@Override
 	public void received(ChannelHandlerContext ctx,	ActiveTestRspPkg activeTestRspPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, activeTestRspPkg);
+		}
 	}
 
 	@Override
 	public void received(ChannelHandlerContext ctx, SubmitReqPkg submitReqPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, submitReqPkg);
+		}
 	}
 
 	@Override
 	public void received(ChannelHandlerContext ctx, SubmitRspPkg submitRspPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, submitRspPkg);
+		}
 	}
 
 	@Override
 	public void received(ChannelHandlerContext ctx, DeliverReqPkg deliverReqPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, deliverReqPkg);
+		}
 	}
 
 	@Override
 	public void received(ChannelHandlerContext ctx, DeliverRspPkg deliverRspPkg) {
-		
+		if(null != this.cmppHandler){
+			this.cmppHandler.received(ctx, deliverRspPkg);
+		}
 	}
 
 	@Override

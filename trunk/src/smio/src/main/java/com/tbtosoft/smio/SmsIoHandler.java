@@ -12,6 +12,7 @@ import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
@@ -24,7 +25,12 @@ import com.tbtosoft.smio.handlers.KeepConnectionEvent;
  */
 public abstract class SmsIoHandler<T> implements ISmsHandler{
 	private final InnerHandler handler = new InnerHandler();
+	private ISmsHandler smsHandler;
 	protected SmsIoHandler(){
+		
+	}
+	protected SmsIoHandler(ISmsHandler smsHandler){
+		this.smsHandler = smsHandler;
 	}
 	
 	/* (non-Javadoc)
@@ -34,20 +40,62 @@ public abstract class SmsIoHandler<T> implements ISmsHandler{
 	public ChannelHandler getChannelHandler() {
 		return this.handler;
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see com.tbtosoft.smio.ISmsHandler#write(java.lang.Object)
+	 */
+	@Override
+	public boolean write(Object object) {
+		return writeImpl(object);
+	}
+	protected boolean writeImpl(Object object){
+		return false;
+	}
 	protected abstract void receiveImpl(ChannelHandlerContext ctx, T t);
-	protected void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e){
-		
+	
+	/* (non-Javadoc)
+	 * @see com.tbtosoft.smio.ISmsHandler#onChannelIdle(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.smio.handlers.ActiveEvent)
+	 */
+	@Override
+	public void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
+		if(null != this.smsHandler){
+			this.smsHandler.onChannelIdle(ctx, e);
+		}
 	}
-	protected void onChannelKeepAlive(ChannelHandlerContext ctx, KeepConnectionEvent e){
-		
+
+	/* (non-Javadoc)
+	 * @see com.tbtosoft.smio.ISmsHandler#onChannelKeepAlive(org.jboss.netty.channel.ChannelHandlerContext, com.tbtosoft.smio.handlers.KeepConnectionEvent)
+	 */
+	@Override
+	public void onChannelKeepAlive(ChannelHandlerContext ctx,
+			KeepConnectionEvent e) {
+		if(null != this.smsHandler){
+			this.smsHandler.onChannelKeepAlive(ctx, e);
+		}
 	}
-	protected void onChannelConnected(ChannelHandlerContext ctx, ChannelStateEvent e){
-		
+
+	/* (non-Javadoc)
+	 * @see com.tbtosoft.smio.ISmsHandler#onChannelConnected(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
+	 */
+	@Override
+	public void onChannelConnected(ChannelHandlerContext ctx,
+			ChannelStateEvent e) {
+		if(null != this.smsHandler){
+			this.smsHandler.onChannelConnected(ctx, e);
+		}
 	}
-	protected void onChannelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e){
-		
+
+	/* (non-Javadoc)
+	 * @see com.tbtosoft.smio.ISmsHandler#onChannelDisconnected(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
+	 */
+	@Override
+	public void onChannelDisconnected(ChannelHandlerContext ctx,
+			ChannelStateEvent e) {
+		if(null != this.smsHandler){
+			this.smsHandler.onChannelDisconnected(ctx, e);
+		}
 	}
+
 	class InnerHandler extends SimpleChannelUpstreamHandler{
 
 		/* (non-Javadoc)
@@ -60,7 +108,9 @@ public abstract class SmsIoHandler<T> implements ISmsHandler{
 				onChannelIdle(ctx, (ActiveEvent)e);
 			} else if(e instanceof KeepConnectionEvent){
 				onChannelKeepAlive(ctx, (KeepConnectionEvent)e);
-			}else {
+			} else if (e instanceof ExceptionEvent) {
+	            exceptionCaught(ctx, (ExceptionEvent) e);
+	        } else {
 				super.handleUpstream(ctx, e);
 			}
 		}
