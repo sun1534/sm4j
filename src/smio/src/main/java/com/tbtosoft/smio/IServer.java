@@ -6,18 +6,12 @@
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  */
-package com.tbtosoft.smio.handlers;
-
-import org.jboss.netty.channel.ChannelHandlerContext;
-
-import com.tbtosoft.sgip.BindReqPkg;
-import com.tbtosoft.sgip.BindRspPkg;
+package com.tbtosoft.smio;
 
 /**
  * @author chengchun
  *
  */
-public interface ISgipHandler {
-	public void received(ChannelHandlerContext ctx, BindReqPkg bindReqPkg);
-	public void received(ChannelHandlerContext ctx, BindRspPkg bindRspPkg);
+public interface IServer {
+	public boolean start();
 }

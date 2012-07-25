@@ -8,21 +8,41 @@
  */
 package com.tbtosoft.smio.impl;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.channel.Channels;
+import org.jboss.netty.handler.timeout.IdleStateHandler;
+import org.jboss.netty.util.Timer;
+
+import com.tbtosoft.smio.ICoder;
+import com.tbtosoft.smio.handlers.DecodeHandler;
+import com.tbtosoft.smio.handlers.EncodeHandler;
 
 /**
  * @author chengchun
  *
  */
 class BasicChannelPipeFactory implements ChannelPipelineFactory {
-
+	private final ICoder coder;
+	private final long idleTimeMillis;
+	private final Timer timer;
+	protected BasicChannelPipeFactory(ICoder coder, Timer timer, long idleTimeMillis){
+		this.coder = coder;
+		this.timer = timer;
+		this.idleTimeMillis = idleTimeMillis;
+	}
 	/* (non-Javadoc)
 	 * @see org.jboss.netty.channel.ChannelPipelineFactory#getPipeline()
 	 */
 	@Override
 	public ChannelPipeline getPipeline() throws Exception {
-		return null;
+		ChannelPipeline pipeline = Channels.pipeline();
+		pipeline.addLast("IDLE-STATE", new IdleStateHandler(this.timer, 0, 0, this.idleTimeMillis, TimeUnit.MILLISECONDS));
+		pipeline.addLast("DECODER", new DecodeHandler(this.coder));
+		pipeline.addLast("ENCODER", new EncodeHandler(this.coder));		
+		return pipeline;
 	}
 
 }
