@@ -28,9 +28,8 @@ import com.tbtosoft.smio.impl.IOServerBootStrap;
  * @author chengchun
  *
  */
-public class IoClientServer implements IClient{	
-	private Timer timer;
-	private long activeTimeMillis;
+public class IoClientServer extends IoSms implements IClient{	
+	private Timer timer;	
 	private IOClientBootstrap clientBootstrap;
 	private IOServerBootStrap serverBootStrap;	
 	public IoClientServer(ICoder coder, SocketAddress localAddress, SocketAddress remoteAddress){
@@ -46,8 +45,11 @@ public class IoClientServer implements IClient{
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = Channels.pipeline();
-				pipeline.addLast("IDLE-STATE", new IdleStateHandler(timer, 0, 0, activeTimeMillis, TimeUnit.MILLISECONDS));
+				pipeline.addLast("IDLE-STATE", new IdleStateHandler(timer, 0, 0, getActiveTimeMillis(), TimeUnit.MILLISECONDS));
 				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());
+				if(null != getSmsHandler()){
+					pipeline.addLast("SMS-HANDLER", getSmsHandler());
+				}
 				return pipeline;
 			}
 		});
@@ -56,24 +58,15 @@ public class IoClientServer implements IClient{
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = Channels.pipeline();
-				pipeline.addLast("IDLE-STATE", new IdleStateHandler(timer, 0, 0, activeTimeMillis, TimeUnit.MILLISECONDS));
+				pipeline.addLast("IDLE-STATE", new IdleStateHandler(timer, 0, 0, getActiveTimeMillis(), TimeUnit.MILLISECONDS));
 				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());
+				if(null != getSmsHandler()){
+					pipeline.addLast("SMS-HANDLER", getSmsHandler());
+				}
 				return pipeline;
 			}
 		});
-	}
-	/**
-	 * @return the activeTimeMillis
-	 */
-	public long getActiveTimeMillis() {
-		return activeTimeMillis;
-	}
-	/**
-	 * @param activeTimeMillis the activeTimeMillis to set
-	 */
-	public void setActiveTimeMillis(long activeTimeMillis) {
-		this.activeTimeMillis = activeTimeMillis;
-	}
+	}	
 	@Override
 	public boolean write(Object object) {
 		

@@ -29,11 +29,9 @@ import com.tbtosoft.smio.impl.IOClientBootstrap;
  * @author chengchun
  *
  */
-public class IoClient implements IClient{
+public class IoClient extends IoSms implements IClient{
 	private IOClientBootstrap clientBootstrap;
-	private Timer timer;
-	private long activeTimeMillis;
-	private ISmsHandler smsHandler;
+	private Timer timer;	
 	public IoClient(ICoder coder, SocketAddress remoteAddress){
 		this.clientBootstrap = new IOClientBootstrap(new NioClientSocketChannelFactory());
 		this.clientBootstrap.setCoder(coder);
@@ -44,7 +42,7 @@ public class IoClient implements IClient{
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = Channels.pipeline();
-				pipeline.addLast("IDLE-STATE", new IdleStateHandler(timer, 0, 0, activeTimeMillis, TimeUnit.MILLISECONDS));
+				pipeline.addLast("IDLE-STATE", new IdleStateHandler(timer, 0, 0, getActiveTimeMillis(), TimeUnit.MILLISECONDS));
 				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());
 				pipeline.addLast("RECONNECT-HANLDER", new ReconnectChannelHandler(new IReconnector() {					
 					@Override
@@ -52,41 +50,17 @@ public class IoClient implements IClient{
 						IoClient.this.connect();
 					}
 				}));
-				if(null != smsHandler){
-					pipeline.addLast("SMS-HANDLER", smsHandler.getChannelHandler());
+				if(null != getSmsHandler()){
+					pipeline.addLast("SMS-HANDLER", getSmsHandler());
 				}
 				return pipeline;
 			}
 		});
 	}
-	/**
-	 * @return the activeTimeMillis
-	 */
-	public long getActiveTimeMillis() {
-		return activeTimeMillis;
-	}
-	/**
-	 * @param activeTimeMillis the activeTimeMillis to set
-	 */
-	public void setActiveTimeMillis(long activeTimeMillis) {
-		this.activeTimeMillis = activeTimeMillis;
-	}
-	
-	/**
-	 * @return the smsHandler
-	 */
-	public ISmsHandler getSmsHandler() {
-		return smsHandler;
-	}
-	/**
-	 * @param smsHandler the smsHandler to set
-	 */
-	public void setSmsHandler(ISmsHandler smsHandler) {
-		this.smsHandler = smsHandler;
-	}
+		
 	@Override
 	public boolean write(Object object) {		
-		return this.smsHandler.write(object);
+		return false;
 	}
 	@Override
 	public void connect() {
