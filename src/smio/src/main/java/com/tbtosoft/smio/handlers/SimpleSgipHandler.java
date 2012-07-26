@@ -12,14 +12,12 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 
 import com.tbtosoft.sgip.BindReqPkg;
 import com.tbtosoft.sgip.BindRspPkg;
-import com.tbtosoft.sgip.IPackage;
-import com.tbtosoft.smio.SmsIoHandler;
 
 /**
  * @author chengchun
  *
  */
-public class SimpleSgipHandler extends SmsIoHandler<IPackage> implements ISgipHandler{
+public class SimpleSgipHandler extends DefaultSmsHandler implements ISgipHandler{
 	
 
 	@Override
@@ -32,8 +30,9 @@ public class SimpleSgipHandler extends SmsIoHandler<IPackage> implements ISgipHa
 		
 	}
 
+
 	@Override
-	protected  void receiveImpl(ChannelHandlerContext ctx, IPackage t) {
+	protected void receiveImpl(ChannelHandlerContext ctx, Object obj) {
 		
 	}
 
