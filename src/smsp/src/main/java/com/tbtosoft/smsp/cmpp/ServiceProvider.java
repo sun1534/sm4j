@@ -37,7 +37,6 @@ import com.tbtosoft.smio.codec.CmppCoder;
 import com.tbtosoft.smio.handlers.ActiveEvent;
 import com.tbtosoft.smio.handlers.ICmppHandler;
 import com.tbtosoft.smio.handlers.KeepConnectionEvent;
-import com.tbtosoft.smio.handlers.SimpleCmppHandler;
 import com.tbtosoft.smsp.AbstractSP;
 
 /**
@@ -51,7 +50,7 @@ public final class ServiceProvider extends AbstractSP implements ICmppHandler, I
 	public ServiceProvider(SocketAddress remoteAddress){		
 		IoClient ioClient = new IoClient(new CmppCoder(), remoteAddress);
 		ioClient.setActiveTimeMillis(30000);
-		ioClient.setSmsHandler(new SimpleCmppHandler(this, this));
+//		ioClient.setSmsHandler(new SimpleCmppHandler(this));
 		this.client = ioClient;
 	}
 	public ServiceProvider(SocketAddress remoteAddress, SocketAddress localAddress){
