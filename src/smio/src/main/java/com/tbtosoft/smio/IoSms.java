@@ -8,6 +8,9 @@
  */
 package com.tbtosoft.smio;
 
+import org.jboss.netty.util.Timer;
+
+import com.tbtosoft.smio.handlers.DefaultIoChannelHandler;
 import com.tbtosoft.smio.handlers.DefaultSmsHandler;
 
 /**
@@ -15,7 +18,9 @@ import com.tbtosoft.smio.handlers.DefaultSmsHandler;
  *
  */
 class IoSms {
-	private DefaultSmsHandler smsHandler;	
+	private DefaultSmsHandler smsHandler;
+	private DefaultIoChannelHandler ioChannelHandler;
+	private Timer timer;
 	private long activeTimeMillis;
 	
 	/**
@@ -29,6 +34,18 @@ class IoSms {
 	 */
 	public final void setSmsHandler(DefaultSmsHandler smsHandler) {
 		this.smsHandler = smsHandler;
+	}	
+	/**
+	 * @return the ioChannelHandler
+	 */
+	public final DefaultIoChannelHandler getIoChannelHandler() {
+		return ioChannelHandler;
+	}
+	/**
+	 * @param ioChannelHandler the ioChannelHandler to set
+	 */
+	public final void setIoChannelHandler(DefaultIoChannelHandler ioChannelHandler) {
+		this.ioChannelHandler = ioChannelHandler;
 	}
 	/**
 	 * @return the activeTimeMillis
@@ -41,5 +58,17 @@ class IoSms {
 	 */
 	public final void setActiveTimeMillis(long activeTimeMillis) {
 		this.activeTimeMillis = activeTimeMillis;
+	}
+	/**
+	 * @return the timer
+	 */
+	public final Timer getTimer() {
+		return timer;
+	}
+	/**
+	 * @param timer the timer to set
+	 */
+	public final void setTimer(Timer timer) {
+		this.timer = timer;
 	}	
 }

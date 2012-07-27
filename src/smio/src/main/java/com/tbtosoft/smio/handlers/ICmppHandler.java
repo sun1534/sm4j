@@ -26,6 +26,10 @@ import com.tbtosoft.cmpp.TerminateRspPkg;
  *
  */
 public interface ICmppHandler {
+//	public void onChannelConnected(ChannelHandlerContext ctx, ChannelStateEvent e);
+//	public void onChannelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e);
+//	public void onChannelAccepted(ChannelHandlerContext ctx, ChannelStateEvent e);
+//	public void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e);
 	public void received(ChannelHandlerContext ctx, ConnectReqPkg connectReqPkg);
 	public void received(ChannelHandlerContext ctx, ConnectRspPkg connectRspPkg);
 	public void received(ChannelHandlerContext ctx, TerminateReqPkg terminateReqPkg);
