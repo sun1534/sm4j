@@ -11,16 +11,19 @@ package com.tbtosoft.smio;
 import java.net.SocketAddress;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.timeout.IdleState;
+import org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler;
+import org.jboss.netty.handler.timeout.IdleStateEvent;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
-import org.jboss.netty.util.HashedWheelTimer;
-import org.jboss.netty.util.Timer;
 
-import com.tbtosoft.smio.handlers.ActiveAwareChannelHandler;
+import com.tbtosoft.smio.handlers.DefaultIoChannelHandler;
+import com.tbtosoft.smio.handlers.DefaultSmsHandler;
 import com.tbtosoft.smio.impl.IOClientBootstrap;
 import com.tbtosoft.smio.impl.IOServerBootStrap;
 
@@ -29,9 +32,13 @@ import com.tbtosoft.smio.impl.IOServerBootStrap;
  *
  */
 public class IoClientServer extends IoSms implements IClient{	
-	private Timer timer;	
 	private IOClientBootstrap clientBootstrap;
-	private IOServerBootStrap serverBootStrap;	
+	private IOServerBootStrap serverBootStrap;
+	private DefaultSmsHandler clientSmsHandler;
+	private DefaultIoChannelHandler clientIoChannelHandler;
+	private DefaultSmsHandler serverSmsHandler;
+	private DefaultIoChannelHandler serverIoChannelHandler;
+	
 	public IoClientServer(ICoder coder, SocketAddress localAddress, SocketAddress remoteAddress){
 		this.clientBootstrap = new IOClientBootstrap(new NioClientSocketChannelFactory());
 		this.clientBootstrap.setCoder(coder);
@@ -39,16 +46,33 @@ public class IoClientServer extends IoSms implements IClient{
 		this.serverBootStrap = new IOServerBootStrap(new NioServerSocketChannelFactory());
 		this.serverBootStrap.setCoder(coder);
 		this.serverBootStrap.setOption("localAddress", localAddress);
-		this.timer = new HashedWheelTimer();
 		this.clientBootstrap.setChannelPipelineFactory(new ChannelPipelineFactory() {
 			
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
-				ChannelPipeline pipeline = Channels.pipeline();
-				pipeline.addLast("IDLE-STATE", new IdleStateHandler(timer, 0, 0, getActiveTimeMillis(), TimeUnit.MILLISECONDS));
-				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());
-				if(null != getSmsHandler()){
-					pipeline.addLast("SMS-HANDLER", getSmsHandler());
+				ChannelPipeline pipeline = Channels.pipeline();				
+				pipeline.addLast("IDLE-STATE", new IdleStateHandler(getTimer(), 0, 0, getActiveTimeMillis(), TimeUnit.MILLISECONDS));
+				pipeline.addLast("ACTIVE-AWARE-HANDLER",new IdleStateAwareChannelHandler(){
+
+					/* (non-Javadoc)
+					 * @see org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler#channelIdle(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.handler.timeout.IdleStateEvent)
+					 */
+					@Override
+					public void channelIdle(ChannelHandlerContext ctx,
+							IdleStateEvent e) throws Exception {
+						if(IdleState.ALL_IDLE == e.getState()){
+							ctx.getChannel().close();
+						} else {
+							super.channelIdle(ctx, e);
+						}
+					}
+					
+				});
+				if(null != getIoChannelHandler()){
+					pipeline.addLast("IO-C-HANDLER", getIoChannelHandler());
+				}
+				if(null != clientSmsHandler){
+					pipeline.addLast("SMS-C-HANDLER", clientSmsHandler);
 				}
 				return pipeline;
 			}
@@ -58,10 +82,25 @@ public class IoClientServer extends IoSms implements IClient{
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = Channels.pipeline();
-				pipeline.addLast("IDLE-STATE", new IdleStateHandler(timer, 0, 0, getActiveTimeMillis(), TimeUnit.MILLISECONDS));
-				pipeline.addLast("ACTIVE-AWARE-HANDLER",new ActiveAwareChannelHandler());
-				if(null != getSmsHandler()){
-					pipeline.addLast("SMS-HANDLER", getSmsHandler());
+				pipeline.addLast("IDLE-STATE", new IdleStateHandler(getTimer(), 0, 0, getActiveTimeMillis(), TimeUnit.MILLISECONDS));
+				pipeline.addLast("ACTIVE-AWARE-HANDLER",new IdleStateAwareChannelHandler(){
+
+					/* (non-Javadoc)
+					 * @see org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler#channelIdle(org.jboss.netty.channel.ChannelHandlerContext, org.jboss.netty.handler.timeout.IdleStateEvent)
+					 */
+					@Override
+					public void channelIdle(ChannelHandlerContext ctx,
+							IdleStateEvent e) throws Exception {
+						if(IdleState.ALL_IDLE == e.getState()){
+							ctx.getChannel().close();
+						} else {
+							super.channelIdle(ctx, e);
+						}
+					}
+					
+				});
+				if(null != serverSmsHandler){
+					pipeline.addLast("SMS-S-HANDLER", serverSmsHandler);
 				}
 				return pipeline;
 			}
@@ -85,5 +124,54 @@ public class IoClientServer extends IoSms implements IClient{
 			this.serverBootStrap.releaseExternalResources();
 		}
 	}
-		
+	/**
+	 * @return the clientSmsHandler
+	 */
+	public final DefaultSmsHandler getClientSmsHandler() {
+		return clientSmsHandler;
+	}
+	/**
+	 * @param clientSmsHandler the clientSmsHandler to set
+	 */
+	public final void setClientSmsHandler(DefaultSmsHandler clientSmsHandler) {
+		this.clientSmsHandler = clientSmsHandler;
+	}
+	/**
+	 * @return the serverSmsHandler
+	 */
+	public final DefaultSmsHandler getServerSmsHandler() {
+		return serverSmsHandler;
+	}
+	/**
+	 * @param serverSmsHandler the serverSmsHandler to set
+	 */
+	public final void setServerSmsHandler(DefaultSmsHandler serverSmsHandler) {
+		this.serverSmsHandler = serverSmsHandler;
+	}
+	/**
+	 * @return the clientIoChannelHandler
+	 */
+	public final DefaultIoChannelHandler getClientIoChannelHandler() {
+		return clientIoChannelHandler;
+	}
+	/**
+	 * @param clientIoChannelHandler the clientIoChannelHandler to set
+	 */
+	public final void setClientIoChannelHandler(
+			DefaultIoChannelHandler clientIoChannelHandler) {
+		this.clientIoChannelHandler = clientIoChannelHandler;
+	}
+	/**
+	 * @return the serverIoChannelHandler
+	 */
+	public final DefaultIoChannelHandler getServerIoChannelHandler() {
+		return serverIoChannelHandler;
+	}
+	/**
+	 * @param serverIoChannelHandler the serverIoChannelHandler to set
+	 */
+	public final void setServerIoChannelHandler(
+			DefaultIoChannelHandler serverIoChannelHandler) {
+		this.serverIoChannelHandler = serverIoChannelHandler;
+	}	
 }

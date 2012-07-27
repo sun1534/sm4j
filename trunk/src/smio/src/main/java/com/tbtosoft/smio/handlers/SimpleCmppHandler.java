@@ -104,5 +104,23 @@ public class SimpleCmppHandler extends DefaultSmsHandler implements ICmppHandler
 			received(ctx, (ActiveTestRspPkg)obj);
 		}
 	}
+//	@Override
+//	public void onChannelConnected(ChannelHandlerContext ctx,
+//			ChannelStateEvent e) {
+//		this.cmppHandler.onChannelConnected(ctx, e);
+//	}
+//	@Override
+//	public void onChannelDisconnected(ChannelHandlerContext ctx,
+//			ChannelStateEvent e) {
+//		this.cmppHandler.onChannelDisconnected(ctx, e);
+//	}
+//	@Override
+//	public void onChannelAccepted(ChannelHandlerContext ctx, ChannelStateEvent e) {
+//		this.cmppHandler.onChannelAccepted(ctx, e);
+//	}
+//	@Override
+//	public void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
+//		this.cmppHandler.onChannelIdle(ctx, e);
+//	}
 
 }

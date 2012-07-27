@@ -22,7 +22,7 @@ public class IOClientBootstrap extends IOBootstrap {
 	private final ClientBootstrap clientBootstrap;	
 	public IOClientBootstrap(ChannelFactory channelFactory){
 		this.clientBootstrap = new ClientBootstrap(channelFactory);
-		this.setChannelPipelineFactory(getInnerChannelPipelineFactory());
+		this.clientBootstrap.setPipelineFactory(getInnerChannelPipelineFactory());
 		
 	}
 	public void setOption(String key, Object value) {
