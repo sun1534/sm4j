@@ -12,11 +12,12 @@ import java.net.SocketAddress;
 import java.util.Collection;
 
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.logging.InternalLogger;
 import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.util.HashedWheelTimer;
+import org.jboss.netty.util.Timer;
 
 import com.tbtosoft.cmpp.ActiveTestReqPkg;
 import com.tbtosoft.cmpp.ActiveTestRspPkg;
@@ -24,37 +25,49 @@ import com.tbtosoft.cmpp.ConnectReqPkg;
 import com.tbtosoft.cmpp.ConnectRspPkg;
 import com.tbtosoft.cmpp.DeliverReqPkg;
 import com.tbtosoft.cmpp.DeliverRspPkg;
-import com.tbtosoft.cmpp.IPackage;
 import com.tbtosoft.cmpp.SubmitReqPkg;
 import com.tbtosoft.cmpp.SubmitRspPkg;
 import com.tbtosoft.cmpp.TerminateReqPkg;
 import com.tbtosoft.cmpp.TerminateRspPkg;
 import com.tbtosoft.smio.IClient;
-import com.tbtosoft.smio.ISmsHandler;
+import com.tbtosoft.smio.IoChannelHandler;
 import com.tbtosoft.smio.IoClient;
 import com.tbtosoft.smio.IoClientServer;
 import com.tbtosoft.smio.codec.CmppCoder;
 import com.tbtosoft.smio.handlers.ActiveEvent;
+import com.tbtosoft.smio.handlers.DefaultIoChannelHandler;
 import com.tbtosoft.smio.handlers.ICmppHandler;
 import com.tbtosoft.smio.handlers.KeepConnectionEvent;
+import com.tbtosoft.smio.handlers.SimpleCmppHandler;
 import com.tbtosoft.smsp.AbstractSP;
 
 /**
  * @author chengchun
  *
  */
-public final class ServiceProvider extends AbstractSP implements ICmppHandler, ISmsHandler{
+public final class ServiceProvider extends AbstractSP implements ICmppHandler, IoChannelHandler{
 	private static final InternalLogger logger =
 	        InternalLoggerFactory.getInstance(ServiceProvider.class);
 	private IClient client;
+	private volatile boolean logined;
+	private volatile Channel channel;//不管长短连接 只需要 知道 保留client端的channel就可以了
+	private Timer timer = new HashedWheelTimer();
 	public ServiceProvider(SocketAddress remoteAddress){		
 		IoClient ioClient = new IoClient(new CmppCoder(), remoteAddress);
 		ioClient.setActiveTimeMillis(30000);
-//		ioClient.setSmsHandler(new SimpleCmppHandler(this));
+		ioClient.setTimer(this.timer);
+		ioClient.setClientSmsHandler(new SimpleCmppHandler(this));
+		ioClient.setIoChannelHandler(new DefaultIoChannelHandler(this));
 		this.client = ioClient;
 	}
 	public ServiceProvider(SocketAddress remoteAddress, SocketAddress localAddress){
-		this.client = new IoClientServer(new CmppCoder(), localAddress, remoteAddress);		
+		IoClientServer ioClientServer = new IoClientServer(new CmppCoder(), localAddress, remoteAddress);
+		ioClientServer.setActiveTimeMillis(30000);
+		ioClientServer.setTimer(this.timer);
+		ioClientServer.setIoChannelHandler(new DefaultIoChannelHandler(this));
+		ioClientServer.setClientSmsHandler(new SimpleCmppHandler(this));
+		ioClientServer.setServerSmsHandler(new SimpleCmppHandler(this));
+		this.client = ioClientServer;		
 	}
 	
 	@Override
@@ -64,7 +77,10 @@ public final class ServiceProvider extends AbstractSP implements ICmppHandler, I
 	}
 	@Override
 	public void stop() {
-		this.client.close();		
+		if(null != this.timer){
+			this.timer.stop();
+		}
+		this.client.close();			
 	}	
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.smsp.ISP#send(java.lang.String, java.util.Collection)
@@ -84,24 +100,49 @@ public final class ServiceProvider extends AbstractSP implements ICmppHandler, I
 	private void activeTest(Channel channel){		
 		channel.write(new ActiveTestReqPkg());
 	}
-	private void write(ChannelHandlerContext ctx, IPackage t){
-		ctx.getChannel().write(t);
+	private void write(ChannelHandlerContext ctx, Object object){
+		ctx.getChannel().write(object);
 	}
-	
+	@Override
+	public void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
+		activeTest(ctx.getChannel());
+	}
+	@Override
+	public void onChannelKeepAlive(ChannelHandlerContext ctx,
+			KeepConnectionEvent e) {
+		
+	}
+	@Override
+	public void onChannelConnected(ChannelHandlerContext ctx,
+			ChannelStateEvent e) {
+		logger.info(ctx.getChannel()+" connected.");
+		login(ctx.getChannel());
+	}
+	@Override
+	public void onChannelDisconnected(ChannelHandlerContext ctx,
+			ChannelStateEvent e) {
+		logger.info(ctx.getChannel()+" disconnected.");
+	}
 	@Override
 	public void received(ChannelHandlerContext ctx, ConnectReqPkg connectReqPkg) {
 		
 	}
 	@Override
 	public void received(ChannelHandlerContext ctx, ConnectRspPkg connectRspPkg) {
-		logger.info(connectRspPkg.toString());
+		if(0 == connectRspPkg.getStatus()){
+			logined(true);
+			this.channel = ctx.getChannel();
+		}
+	}
+	private void logined(boolean isLogined){
+		this.logined = isLogined;
 	}
 	@Override
 	public void received(ChannelHandlerContext ctx,
 			TerminateReqPkg terminateReqPkg) {
 		TerminateRspPkg terminateRspPkg = new TerminateRspPkg();
 		terminateRspPkg.setSequence(terminateReqPkg.getSequence());
-		write(ctx, terminateRspPkg);
+		write(ctx, terminateRspPkg);	
 	}
 	@Override
 	public void received(ChannelHandlerContext ctx,
@@ -133,37 +174,5 @@ public final class ServiceProvider extends AbstractSP implements ICmppHandler, I
 	@Override
 	public void received(ChannelHandlerContext ctx, DeliverRspPkg deliverRspPkg) {
 		
-	}
-	@Override
-	public ChannelHandler getChannelHandler() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	@Override
-	public boolean write(Object object) {
-
-		return false;
-	}
-	@Override
-	public void onChannelIdle(ChannelHandlerContext ctx, ActiveEvent e) {
-		logger.info(ctx.getChannel()+" idle.");
-		activeTest(ctx.getChannel());
-	}
-	@Override
-	public void onChannelKeepAlive(ChannelHandlerContext ctx,
-			KeepConnectionEvent e) {
-		logger.info("try open");		
-	}
-	@Override
-	public void onChannelConnected(ChannelHandlerContext ctx,
-			ChannelStateEvent e) {
-		logger.info(ctx.getChannel()+" connected.");
-		login(ctx.getChannel());
-	}
-	@Override
-	public void onChannelDisconnected(ChannelHandlerContext ctx,
-			ChannelStateEvent e) {
-		logger.info(ctx.getChannel()+" disconnected.");
-	}
-	
+	}	
 }
