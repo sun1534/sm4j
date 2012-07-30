@@ -65,8 +65,9 @@ public final class ServiceProvider extends AbstractSP implements ICmppHandler, I
 		ioClientServer.setActiveTimeMillis(30000);
 		ioClientServer.setTimer(this.timer);
 		ioClientServer.setIoChannelHandler(new DefaultIoChannelHandler(this));
-		ioClientServer.setClientSmsHandler(new SimpleCmppHandler(this));
-		ioClientServer.setServerSmsHandler(new SimpleCmppHandler(this));
+		ioClientServer.setSmsHandler(new SimpleCmppHandler(this));
+//		ioClientServer.setClientSmsHandler(new SimpleCmppHandler(this));
+//		ioClientServer.setServerSmsHandler(new SimpleCmppHandler(this));
 		this.client = ioClientServer;		
 	}
 	
@@ -122,6 +123,7 @@ public final class ServiceProvider extends AbstractSP implements ICmppHandler, I
 	public void onChannelDisconnected(ChannelHandlerContext ctx,
 			ChannelStateEvent e) {
 		logger.info(ctx.getChannel()+" disconnected.");
+		logined(false);
 	}
 	@Override
 	public void received(ChannelHandlerContext ctx, ConnectReqPkg connectReqPkg) {
