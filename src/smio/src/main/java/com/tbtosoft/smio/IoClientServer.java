@@ -22,8 +22,6 @@ import org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler;
 import org.jboss.netty.handler.timeout.IdleStateEvent;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
 
-import com.tbtosoft.smio.handlers.DefaultIoChannelHandler;
-import com.tbtosoft.smio.handlers.DefaultSmsHandler;
 import com.tbtosoft.smio.impl.IOClientBootstrap;
 import com.tbtosoft.smio.impl.IOServerBootStrap;
 
@@ -34,10 +32,10 @@ import com.tbtosoft.smio.impl.IOServerBootStrap;
 public class IoClientServer extends IoSms implements IClient{	
 	private IOClientBootstrap clientBootstrap;
 	private IOServerBootStrap serverBootStrap;
-	private DefaultSmsHandler clientSmsHandler;
-	private DefaultIoChannelHandler clientIoChannelHandler;
-	private DefaultSmsHandler serverSmsHandler;
-	private DefaultIoChannelHandler serverIoChannelHandler;
+//	private DefaultSmsHandler clientSmsHandler;
+//	private DefaultIoChannelHandler clientIoChannelHandler;
+//	private DefaultSmsHandler serverSmsHandler;
+//	private DefaultIoChannelHandler serverIoChannelHandler;
 	
 	public IoClientServer(ICoder coder, SocketAddress localAddress, SocketAddress remoteAddress){
 		this.clientBootstrap = new IOClientBootstrap(new NioClientSocketChannelFactory());
@@ -71,8 +69,8 @@ public class IoClientServer extends IoSms implements IClient{
 				if(null != getIoChannelHandler()){
 					pipeline.addLast("IO-C-HANDLER", getIoChannelHandler());
 				}
-				if(null != clientSmsHandler){
-					pipeline.addLast("SMS-C-HANDLER", clientSmsHandler);
+				if(null != getSmsHandler()){
+					pipeline.addLast("SMS-C-HANDLER", getSmsHandler());
 				}
 				return pipeline;
 			}
@@ -99,12 +97,13 @@ public class IoClientServer extends IoSms implements IClient{
 					}
 					
 				});
-				if(null != serverSmsHandler){
-					pipeline.addLast("SMS-S-HANDLER", serverSmsHandler);
+				if(null != getSmsHandler()){
+					pipeline.addLast("SMS-S-HANDLER", getSmsHandler());
 				}
 				return pipeline;
 			}
 		});
+		this.serverBootStrap.bind();
 	}	
 	@Override
 	public boolean write(Object object) {
@@ -124,54 +123,54 @@ public class IoClientServer extends IoSms implements IClient{
 			this.serverBootStrap.releaseExternalResources();
 		}
 	}
-	/**
-	 * @return the clientSmsHandler
-	 */
-	public final DefaultSmsHandler getClientSmsHandler() {
-		return clientSmsHandler;
-	}
-	/**
-	 * @param clientSmsHandler the clientSmsHandler to set
-	 */
-	public final void setClientSmsHandler(DefaultSmsHandler clientSmsHandler) {
-		this.clientSmsHandler = clientSmsHandler;
-	}
-	/**
-	 * @return the serverSmsHandler
-	 */
-	public final DefaultSmsHandler getServerSmsHandler() {
-		return serverSmsHandler;
-	}
-	/**
-	 * @param serverSmsHandler the serverSmsHandler to set
-	 */
-	public final void setServerSmsHandler(DefaultSmsHandler serverSmsHandler) {
-		this.serverSmsHandler = serverSmsHandler;
-	}
-	/**
-	 * @return the clientIoChannelHandler
-	 */
-	public final DefaultIoChannelHandler getClientIoChannelHandler() {
-		return clientIoChannelHandler;
-	}
-	/**
-	 * @param clientIoChannelHandler the clientIoChannelHandler to set
-	 */
-	public final void setClientIoChannelHandler(
-			DefaultIoChannelHandler clientIoChannelHandler) {
-		this.clientIoChannelHandler = clientIoChannelHandler;
-	}
-	/**
-	 * @return the serverIoChannelHandler
-	 */
-	public final DefaultIoChannelHandler getServerIoChannelHandler() {
-		return serverIoChannelHandler;
-	}
-	/**
-	 * @param serverIoChannelHandler the serverIoChannelHandler to set
-	 */
-	public final void setServerIoChannelHandler(
-			DefaultIoChannelHandler serverIoChannelHandler) {
-		this.serverIoChannelHandler = serverIoChannelHandler;
-	}	
+//	/**
+//	 * @return the clientSmsHandler
+//	 */
+//	public final DefaultSmsHandler getClientSmsHandler() {
+//		return clientSmsHandler;
+//	}
+//	/**
+//	 * @param clientSmsHandler the clientSmsHandler to set
+//	 */
+//	public final void setClientSmsHandler(DefaultSmsHandler clientSmsHandler) {
+//		this.clientSmsHandler = clientSmsHandler;
+//	}
+//	/**
+//	 * @return the serverSmsHandler
+//	 */
+//	public final DefaultSmsHandler getServerSmsHandler() {
+//		return serverSmsHandler;
+//	}
+//	/**
+//	 * @param serverSmsHandler the serverSmsHandler to set
+//	 */
+//	public final void setServerSmsHandler(DefaultSmsHandler serverSmsHandler) {
+//		this.serverSmsHandler = serverSmsHandler;
+//	}
+//	/**
+//	 * @return the clientIoChannelHandler
+//	 */
+//	public final DefaultIoChannelHandler getClientIoChannelHandler() {
+//		return clientIoChannelHandler;
+//	}
+//	/**
+//	 * @param clientIoChannelHandler the clientIoChannelHandler to set
+//	 */
+//	public final void setClientIoChannelHandler(
+//			DefaultIoChannelHandler clientIoChannelHandler) {
+//		this.clientIoChannelHandler = clientIoChannelHandler;
+//	}
+//	/**
+//	 * @return the serverIoChannelHandler
+//	 */
+//	public final DefaultIoChannelHandler getServerIoChannelHandler() {
+//		return serverIoChannelHandler;
+//	}
+//	/**
+//	 * @param serverIoChannelHandler the serverIoChannelHandler to set
+//	 */
+//	public final void setServerIoChannelHandler(
+//			DefaultIoChannelHandler serverIoChannelHandler) {
+//		this.serverIoChannelHandler = serverIoChannelHandler;
+//	}	
 }

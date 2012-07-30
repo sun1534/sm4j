@@ -33,9 +33,14 @@ abstract class AbstractPackage implements IPackage{
 	private int length;
 	private final int commandId;
 	private byte[] sequence;
-
+	private static ISequenceFactory sequenceFactory = new DefaultSequenceFactory(301012345);
+	private byte[] genNextGlobalSequenceNumber(){
+		return sequenceFactory.next();
+	}
+	
 	protected AbstractPackage(int cmd){
 		commandId = cmd;
+		this.sequence = genNextGlobalSequenceNumber();
 	}
 	
 	@Override
@@ -50,11 +55,12 @@ abstract class AbstractPackage implements IPackage{
 		this.length = 0;
 		buffer.putInt(0);
 		this.length += 4;
-		buffer.putInt(commandId);
+		buffer.putInt(this.commandId);
 		this.length += 4;
-		buffer.put(sequence);
-		this.length += 4;
+		buffer.put(this.sequence);
+		this.length += this.sequence.length;
 		this.length += onToBuffer(buffer);
+		buffer.putInt(0, this.length);
 		return this.length;
 	}
 	protected abstract int onToBuffer(ByteBuffer buffer) throws SgipException;
