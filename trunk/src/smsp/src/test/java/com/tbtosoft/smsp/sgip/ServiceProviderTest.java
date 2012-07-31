@@ -23,5 +23,6 @@ public class ServiceProviderTest extends TestCase {
 		serviceProvider.start();
 		System.in.read();
 		serviceProvider.stop();
+		
 	}
 }

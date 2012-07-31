@@ -49,6 +49,7 @@ public final class ServiceProvider extends AbstractSP implements ISgipHandler, I
 	        InternalLoggerFactory.getInstance(ServiceProvider.class);
 	private IClient client;
 	private Timer timer = new HashedWheelTimer();
+	private volatile boolean logined;
 	public ServiceProvider(SocketAddress localAddress, SocketAddress remoteAddress){
 		IoClientServer ioClientServer = new IoClientServer(new SgipCoder(), localAddress, remoteAddress);		
 		ioClientServer.setActiveTimeMillis(30000);
@@ -58,6 +59,7 @@ public final class ServiceProvider extends AbstractSP implements ISgipHandler, I
 		this.client = ioClientServer;
 	}
 	private void logined(boolean isLogined){
+		this.logined = isLogined;
 	}
 	private void login(Channel channel){
 		BindReqPkg bindReqPkg = new BindReqPkg();
