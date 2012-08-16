@@ -19,10 +19,11 @@ import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
-import com.tbtosoft.cmpp.DeliverReqPkg;
 import com.tbtosoft.sgip.BindReqPkg;
 import com.tbtosoft.sgip.BindRspPkg;
+import com.tbtosoft.sgip.DeliverReqPkg;
 import com.tbtosoft.sgip.DeliverRspPkg;
+import com.tbtosoft.sgip.IPackage;
 import com.tbtosoft.sgip.ReportReqPkg;
 import com.tbtosoft.sgip.ReportRspPkg;
 import com.tbtosoft.sgip.SubmitReqPkg;
@@ -132,7 +133,9 @@ public final class ServiceProvider extends AbstractSP implements ISgipHandler, I
 
 	@Override
 	public void received(ChannelHandlerContext ctx, DeliverReqPkg deliverReqPkg) {
-		
+		DeliverRspPkg deliverRspPkg = new DeliverRspPkg();
+		deliverRspPkg.setSequence(deliverRspPkg.getSequence());
+		writeChannelHandlerContext(ctx, deliverRspPkg);
 	}
 
 	@Override
@@ -162,12 +165,17 @@ public final class ServiceProvider extends AbstractSP implements ISgipHandler, I
 
 	@Override
 	public void received(ChannelHandlerContext ctx, UnBindReqPkg unBindReqPkg) {
-		
-	}
-
-	@Override
-	public void received(ChannelHandlerContext ctx, UnBindRspPkg unBindRspPkg) {
-		
+		UnBindRspPkg unBindRspPkg = new UnBindRspPkg();
+		unBindRspPkg.setSequence(unBindReqPkg.getSequence());
+		writeChannelHandlerContext(ctx, unBindRspPkg);
+		ctx.getChannel().close();
 	}
 	
+	@Override
+	public void received(ChannelHandlerContext ctx, UnBindRspPkg unBindRspPkg) {
+		ctx.getChannel().close();
+	}
+	private void writeChannelHandlerContext(ChannelHandlerContext ctx, IPackage pkg){
+		ctx.getChannel().write(pkg);
+	}
 }
