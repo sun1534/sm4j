@@ -11,6 +11,8 @@ package com.tbtosoft.smio.impl;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.logging.InternalLogLevel;
 import org.jboss.netty.util.ExternalResourceReleasable;
 
 import com.tbtosoft.smio.ICoder;
@@ -39,13 +41,14 @@ abstract class IOBootstrap implements ExternalResourceReleasable {
 			@Override
 			public ChannelPipeline getPipeline() throws Exception {
 				ChannelPipeline pipeline = Channels.pipeline();
+				pipeline.addLast("logger", new LoggingHandler(InternalLogLevel.INFO));
 				if(null != coder){
 					pipeline.addLast("DECODER", new DecodeHandler(coder));
 					pipeline.addLast("ENCODER", new EncodeHandler(coder));
 				}
 				if(null != channelPipelineFactory){
 					ChannelPipeHelper.addLast(pipeline, channelPipelineFactory.getPipeline());
-				}
+				}				
 				return pipeline;
 			}
 		};

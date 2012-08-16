@@ -25,11 +25,17 @@ public final class DeliverRspPkg extends AbstractPackage {
 	 * 保留，扩展用
 	 */
 	private byte[] reserve;	
-	protected DeliverRspPkg() {
-		super(Command.DELIVER_RSP);	
-		this.reserve = new byte[8];
+	public DeliverRspPkg() {
+		this(new byte[8]);
 	}
-
+	public DeliverRspPkg(byte[] reserve){
+		this(reserve, (byte)0);
+	}
+	public DeliverRspPkg(byte[] reserve, byte result){
+		super(Command.DELIVER_RSP);
+		this.reserve = reserve;
+		this.result = result;
+	}
 	/* (non-Javadoc)
 	 * @see com.tbtosoft.cmpp.AbstractPackage#onToBuffer(java.nio.ByteBuffer)
 	 */
