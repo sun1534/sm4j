@@ -10,9 +10,9 @@ package com.tbtosoft.smio.handlers;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 
-import com.tbtosoft.cmpp.DeliverReqPkg;
 import com.tbtosoft.sgip.BindReqPkg;
 import com.tbtosoft.sgip.BindRspPkg;
+import com.tbtosoft.sgip.DeliverReqPkg;
 import com.tbtosoft.sgip.DeliverRspPkg;
 import com.tbtosoft.sgip.ReportReqPkg;
 import com.tbtosoft.sgip.ReportRspPkg;
